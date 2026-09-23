@@ -4,6 +4,70 @@
    ต้องโหลด places-data.js ก่อนไฟล์นี้ในหน้าที่ใช้ข้อมูลสถานที่
 ========================================================== */
 
+/* ==========================================================
+   โหมดสว่าง/มืด
+   การตั้งค่าธีมครั้งแรกทำในสคริปต์สั้นๆ ใน <head> ของทุกหน้า (กันจอกระพริบ)
+   ส่วนนี้ดูแลปุ่มสลับและจำค่าที่ผู้ใช้เลือกไว้
+========================================================== */
+
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    const isDark = theme === 'dark';
+    btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    btn.setAttribute('title', isDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+    btn.setAttribute('aria-label', isDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+  }
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try {
+    localStorage.setItem('tiaoma-theme', next);
+  } catch (e) { /* localStorage ถูกปิด — เปลี่ยนได้แต่ไม่จำค่า */ }
+}
+
+function initTheme() {
+  applyTheme(currentTheme());
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.addEventListener('click', toggleTheme);
+
+  // ถ้าผู้ใช้ยังไม่เคยเลือกเอง ให้เปลี่ยนตามการตั้งค่าของเครื่องแบบสดๆ
+  try {
+    if (!localStorage.getItem('tiaoma-theme') && window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const onChange = e => {
+        if (!localStorage.getItem('tiaoma-theme')) applyTheme(e.matches ? 'dark' : 'light');
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    }
+  } catch (e) { /* ไม่รองรับ ก็ข้ามไป */ }
+}
+
+/* ==========================================================
+   PWA: ลงทะเบียน Service Worker
+   ทำให้ติดตั้งเว็บลงมือถือได้ และเปิดหน้าที่เคยเข้าแล้วได้ตอนเน็ตหลุด
+   ลงทะเบียนหลังหน้าโหลดเสร็จ จะได้ไม่แย่งแบนด์วิดท์ตอนเปิดหน้าครั้งแรก
+========================================================== */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* ลงทะเบียนไม่สำเร็จก็ไม่เป็นไร เว็บยังใช้งานได้ตามปกติ */
+    });
+  });
+}
+
 /* ----- ปุ่มเลื่อนกลับขึ้นบนสุด (ทุกหน้า) ----- */
 window.addEventListener('scroll', () => {
   const btn = document.getElementById('back-to-top');
@@ -1469,10 +1533,13 @@ function pageNeedsPlaces() {
   return !!(document.getElementById('places')
     || document.getElementById('placeDetailRoot')
     || document.getElementById('likedRoot')
-    || document.getElementById('adminRoot'));
+    || document.getElementById('adminRoot')
+    || document.getElementById('mapList'));
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+
   // แสดง skeleton ทันทีก่อนข้อมูลมา (กันหน้าโล่ง)
   const grid = document.getElementById('places');
   if (grid) grid.innerHTML = skeletonCards(6);
@@ -1486,6 +1553,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // แจ้งหน้าที่ต้องรอ session/PLACES พร้อมก่อนวาดผล (เช่น admin.html) ว่าโหลดเสร็จแล้ว
   window.dispatchEvent(new CustomEvent('tiaoma:session-ready'));
+
+  // หน้าแผนที่รวมที่เที่ยว
+  initMapPage();
 
   // หน้าแรก: แสดงสถานที่แนะนำ 6 อันดับแรก
   if (grid && grid.dataset.mode === 'home' && typeof PLACES !== 'undefined') {
@@ -1559,4 +1629,103 @@ function bindSearchInputs() {
       searchPlaces();
     });
   }
+}
+
+/* ==========================================================
+   หน้าแผนที่รวมที่เที่ยว (map.html)
+   ข้อมูล seed มีแต่ชื่อสถานที่ (mapQuery) ไม่มีพิกัด lat/lng
+   จึงใช้วิธีฝังแผนที่ Google แบบค้นหาด้วยชื่อ ซึ่งแม่นและไม่ต้องใช้ API key
+   ผู้ใช้เลือกที่เที่ยวจากรายการด้านซ้าย แล้วแผนที่ด้านขวาจะเปลี่ยนตาม
+========================================================== */
+
+let mapSelectedId = null;
+
+function mapEmbedSrc(query) {
+  return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+}
+
+/* เลือกที่เที่ยวหนึ่งแห่งแล้วเลื่อนแผนที่ไปที่นั่น */
+function selectMapPlace(id) {
+  const place = getPlaceById(id);
+  if (!place) return;
+  mapSelectedId = id;
+
+  const frame = document.getElementById('mapFrame');
+  if (frame) frame.src = mapEmbedSrc(place.mapQuery || place.name);
+
+  // เน้นรายการที่เลือกอยู่
+  document.querySelectorAll('#mapList .map-item').forEach(li => {
+    const active = li.dataset.id === id;
+    li.classList.toggle('active', active);
+    const btn = li.querySelector('button');
+    if (btn) btn.setAttribute('aria-current', active ? 'true' : 'false');
+  });
+
+  const box = document.getElementById('mapCurrent');
+  if (box) {
+    box.innerHTML = `
+      <h2 class="map-current-name">${escapeHTML(place.name)}</h2>
+      <p class="map-current-meta">
+        <span class="badge-category">${escapeHTML(place.category)}</span>
+        <span class="badge-province">📍 ${escapeHTML(place.province)}</span>
+      </p>
+      <p class="map-current-short">${escapeHTML(place.short)}</p>
+      <div class="map-current-actions">
+        <a class="btn-primary" href="place-detail.html?id=${encodeURIComponent(place.id)}">ดูรายละเอียด</a>
+        <a class="btn-outline" target="_blank" rel="noopener noreferrer"
+           href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.mapQuery || place.name)}">
+          เปิดใน Google Maps ↗
+        </a>
+      </div>`;
+  }
+}
+
+/* วาดรายการที่เที่ยวด้านซ้าย ตามตัวกรองภาคและคำค้นหา */
+function renderMapList() {
+  const list = document.getElementById('mapList');
+  if (!list || typeof PLACES === 'undefined') return;
+
+  const region = (document.getElementById('mapRegionFilter') || {}).value || '';
+  const keyword = ((document.getElementById('mapSearchInput') || {}).value || '')
+    .trim().toLowerCase();
+
+  const matched = PLACES.filter(p => {
+    const regionOk = !region || getRegionByProvince(p.province) === region;
+    const keywordOk = !keyword
+      || String(p.name || '').toLowerCase().includes(keyword)
+      || String(p.province || '').toLowerCase().includes(keyword)
+      || String(p.category || '').toLowerCase().includes(keyword);
+    return regionOk && keywordOk;
+  });
+
+  const count = document.getElementById('mapCount');
+  if (count) count.textContent = `พบ ${matched.length} ที่เที่ยว`;
+
+  if (!matched.length) {
+    list.innerHTML = '<li class="map-empty">ไม่พบที่เที่ยวที่ตรงกับเงื่อนไข ลองล้างตัวกรองดูนะ</li>';
+    return;
+  }
+
+  list.innerHTML = matched.map(p => `
+    <li class="map-item" data-id="${escapeAttr(p.id)}">
+      <button type="button" onclick="selectMapPlace('${escapeAttr(p.id)}')">
+        <span class="map-item-name">${escapeHTML(p.name)}</span>
+        <span class="map-item-meta">${escapeHTML(p.province)} · ${escapeHTML(p.category)}</span>
+      </button>
+    </li>`).join('');
+
+  // ถ้าที่เลือกไว้ยังอยู่ในผลลัพธ์ก็คงไว้ ไม่งั้นเลือกอันแรกให้
+  const stillThere = matched.some(p => p.id === mapSelectedId);
+  selectMapPlace(stillThere ? mapSelectedId : matched[0].id);
+}
+
+function initMapPage() {
+  const list = document.getElementById('mapList');
+  if (!list) return;
+  ['mapRegionFilter', 'mapSearchInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener(id === 'mapSearchInput' ? 'input' : 'change', renderMapList);
+  });
+  renderMapList();
 }

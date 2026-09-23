@@ -19,7 +19,7 @@ import java.time.LocalDate;
 public class SitemapController {
 
     private static final String[] STATIC_PAGES = {
-            "", "places.html", "articles.html", "about.html"
+            "", "places.html", "map.html", "articles.html", "about.html"
     };
 
     private final PlaceRepository placeRepository;

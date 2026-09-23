@@ -22,6 +22,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Service worker และ manifest ต้องห้าม cache
+        // ไฟล์ static ทั่วไปตั้ง cache ไว้ 7 วัน ถ้า sw.js โดนด้วย ผู้ใช้จะติดอยู่กับ
+        // service worker ตัวเก่านานถึง 7 วัน และไม่ได้รับการแก้ไขใดๆ เลย
+        // (ต้องลงทะเบียนก่อน handler ของ /** เพราะ Spring ใช้ตัวแรกที่ตรง)
+        registry.addResourceHandler("/sw.js", "/site.webmanifest")
+                .addResourceLocations("classpath:/static/")
+                .setCacheControl(CacheControl.noCache().mustRevalidate());
+
         Path dir = Paths.get(uploadDir).toAbsolutePath().normalize();
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(dir.toUri().toString())

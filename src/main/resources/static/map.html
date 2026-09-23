@@ -14,20 +14,20 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แนะนำที่เที่ยว | เที่ยวมะ</title>
-<meta name="description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<title>แผนที่ที่เที่ยวทั่วไทย | เที่ยวมะ</title>
+<meta name="description" content="ดูที่เที่ยวทั่วไทยทั้งหมดบนแผนที่เดียว เลือกจังหวัดหรือภาคที่สนใจ แล้วดูตำแหน่งจริงได้ทันที">
 <meta name="theme-color" content="#0e7c66" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14171a" media="(prefers-color-scheme: dark)">
-<link rel="canonical" href="https://tiaoma.example.com/places.html">
+<link rel="canonical" href="https://tiaoma.example.com/map.html">
 
 <!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="เที่ยวมะ">
 <meta property="og:locale" content="th_TH">
-<meta property="og:title" content="แนะนำที่เที่ยว | เที่ยวมะ">
+<meta property="og:title" content="แผนที่ที่เที่ยวทั่วไทย | เที่ยวมะ">
 <meta property="og:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
 <meta property="og:image" content="https://tiaoma.example.com/image/phi-phi.jpg">
-<meta property="og:url" content="https://tiaoma.example.com/places.html">
+<meta property="og:url" content="https://tiaoma.example.com/map.html">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="แนะนำที่เที่ยว | เที่ยวมะ">
 <meta name="twitter:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
@@ -102,15 +102,13 @@
 </style>
 </head>
 <body>
-
 <a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
-
 <header class="site-header">
   <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
   <nav class="main-nav" aria-label="เมนูหลัก">
     <a href="index.html">หน้าแรก</a>
-    <a href="places.html" class="active">แนะนำที่เที่ยว</a>
-    <a href="map.html">แผนที่</a>
+    <a href="places.html">แนะนำที่เที่ยว</a>
+    <a href="map.html" class="active">แผนที่</a>
     <a href="articles.html">บทความ</a>
     <a href="about.html">เที่ยวกับเรา</a>
   </nav>
@@ -130,49 +128,38 @@
 </header>
 
 <section class="hero hero--compact">
-  <h1>แนะนำที่เที่ยวทั่วไทย</h1>
-  <p>เลือกจุดหมายที่ใช่ แล้วออกเดินทางไปกับเที่ยวมะ</p>
+  <h1>แผนที่ที่เที่ยวทั่วไทย</h1>
+  <p>เลือกที่เที่ยวจากรายการ แล้วดูตำแหน่งจริงบนแผนที่ได้ทันที</p>
 </section>
 
 <main id="main">
-  <div class="search-box tm-filterbar">
-    <div class="tm-search">
-      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อสถานที่ที่ต้องการค้นหา..." aria-label="ค้นหาชื่อสถานที่">
-    </div>
-    <div class="tm-pill tm-pill--region">
-      <select id="regionFilter" aria-label="กรองตามภาค">
-        <option value="">ทุกภาค</option>
-        <option value="เหนือ">ภาคเหนือ</option>
-        <option value="ตะวันออกเฉียงเหนือ">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
-        <option value="กลาง">ภาคกลาง</option>
-        <option value="ตะวันออก">ภาคตะวันออก</option>
-        <option value="ตะวันตก">ภาคตะวันตก</option>
-        <option value="ใต้">ภาคใต้</option>
-      </select>
-    </div>
-    <div class="tm-pill tm-pill--category">
-      <select id="categoryFilter" aria-label="กรองตามประเภท">
-        <option value="">ทุกประเภท</option>
-        <option value="ภูเขา">ภูเขา / ธรรมชาติ</option>
-        <option value="ทะเล">ทะเล / เกาะ</option>
-        <option value="วัด">วัด / วัฒนธรรม</option>
-        <option value="ประวัติศาสตร์">ประวัติศาสตร์</option>
-      </select>
-    </div>
-    <div class="tm-pill tm-pill--sort">
-      <select id="sortFilter" aria-label="เรียงลำดับ">
-        <option value="">เรียงตามค่าเริ่มต้น</option>
-        <option value="popular">ยอดนิยม (คนบันทึกมากสุด)</option>
-        <option value="rating">คะแนนรีวิวสูงสุด</option>
-        <option value="name">ชื่อ ก-ฮ</option>
-      </select>
-    </div>
-    <button type="button" id="clearFilters" class="btn-outline" style="border-radius:999px;">ล้างตัวกรอง</button>
-  </div>
+  <div class="map-page">
+    <aside class="map-sidebar">
+      <div class="map-filters">
+        <label class="sr-only" for="mapRegionFilter">กรองตามภาค</label>
+        <select id="mapRegionFilter" aria-label="กรองตามภาค">
+          <option value="">ทุกภาค</option>
+          <option value="เหนือ">ภาคเหนือ</option>
+          <option value="ตะวันออกเฉียงเหนือ">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
+          <option value="กลาง">ภาคกลาง</option>
+          <option value="ตะวันออก">ภาคตะวันออก</option>
+          <option value="ตะวันตก">ภาคตะวันตก</option>
+          <option value="ใต้">ภาคใต้</option>
+        </select>
+        <input type="search" id="mapSearchInput" placeholder="ค้นหาชื่อที่เที่ยว..." aria-label="ค้นหาที่เที่ยวในแผนที่">
+      </div>
+      <p class="map-count" id="mapCount" role="status" aria-live="polite"></p>
+      <ul class="map-list" id="mapList" aria-label="รายชื่อที่เที่ยว"></ul>
+    </aside>
 
-  <section class="places-sections" id="places" data-mode="all">
-    <!-- เนื้อหาสถานที่ท่องเที่ยวถูกสร้างขึ้นอัตโนมัติโดย script.js จาก places-data.js (แยกเป็นส่วนตามภาค) -->
-  </section>
+    <section class="map-view" aria-label="แผนที่">
+      <div class="map-embed-box">
+        <iframe id="mapFrame" title="แผนที่ที่เที่ยว" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
+      <div class="map-current" id="mapCurrent"></div>
+    </section>
+  </div>
 </main>
 
 <footer class="site-footer">

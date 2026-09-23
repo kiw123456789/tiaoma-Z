@@ -314,6 +314,55 @@ class ApiIntegrationTest {
         assertThat(userRepository.findByEmail("bye@example.com")).isEmpty();
     }
 
+    // ---------- ไฟล์ static / PWA / sitemap ----------
+
+    @Test
+    @DisplayName("sitemap.xml สร้างจากฐานข้อมูลและมี URL ของทุกสถานที่")
+    void sitemap_listsPlaces() throws Exception {
+        String xml = mvc.perform(get("/sitemap.xml"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(xml).contains("<urlset");
+        assertThat(xml).contains("/places.html");
+        assertThat(xml).contains("/map.html");
+        assertThat(xml).contains("/place-detail.html?id=");
+        assertThat(xml).contains("/article-detail.html?id=");
+        // ต้องไม่ escape ซ้ำจนกลายเป็น &amp;amp;
+        assertThat(xml).doesNotContain("&amp;amp;");
+    }
+
+    @Test
+    @DisplayName("sw.js ต้องห้าม cache ไม่งั้นผู้ใช้ติด service worker ตัวเก่า")
+    void serviceWorker_isNotCached() throws Exception {
+        String cacheControl = mvc.perform(get("/sw.js"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getHeader("Cache-Control");
+
+        assertThat(cacheControl).isNotNull();
+        assertThat(cacheControl).contains("no-cache");
+    }
+
+    @Test
+    @DisplayName("หน้าเว็บหลักเปิดได้โดยไม่ต้องล็อกอิน")
+    void staticPages_areReachable() throws Exception {
+        for (String page : new String[]{"/index.html", "/places.html", "/map.html",
+                                        "/articles.html", "/about.html", "/404.html"}) {
+            mvc.perform(get(page)).andExpect(status().isOk());
+        }
+    }
+
+    @Test
+    @DisplayName("robots.txt ห้าม index หน้าส่วนตัว")
+    void robots_disallowsPrivatePages() throws Exception {
+        String robots = mvc.perform(get("/robots.txt"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(robots).contains("Disallow: /admin.html");
+        assertThat(robots).contains("Disallow: /api/");
+    }
+
     // ---------- ตัวช่วย ----------
 
     private void registerUser(String email, String password) throws Exception {

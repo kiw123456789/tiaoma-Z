@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายละเอียดสถานที่ | เที่ยวมะ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
+  <nav class="main-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="places.html" class="active">แนะนำที่เที่ยว</a>
+    <a href="articles.html">บทความ</a>
+    <a href="about.html">เที่ยวกับเรา</a>
+  </nav>
+  <div class="header-right">
+    <div class="header-search">
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว...">
+      <button onclick="headerSearchAndGo()">🔍</button>
+    </div>
+    <span id="authArea">
+      <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
+    </span>
+  </div>
+</header>
+
+<main>
+  <div id="placeDetailRoot">
+    <!-- เนื้อหาถูกสร้างขึ้นอัตโนมัติโดย script.js ตาม ?id= ใน URL -->
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>เที่ยวมะ</h4>
+      <a href="about.html">เกี่ยวกับเรา</a>
+      <a href="articles.html">บทความท่องเที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>เมนู</h4>
+      <a href="index.html">หน้าแรก</a>
+      <a href="places.html">แนะนำที่เที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>บัญชีผู้ใช้</h4>
+      <a href="register.html">สมัครสมาชิก</a>
+      <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
+</footer>
+
+<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+
+<script src="places-data.js?v=2"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บทความท่องเที่ยว | เที่ยวมะ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
+  <nav class="main-nav">
+    <a href="index.html">หน้าแรก</a>
+    <a href="places.html">แนะนำที่เที่ยว</a>
+    <a href="articles.html" class="active">บทความ</a>
+    <a href="about.html">เที่ยวกับเรา</a>
+  </nav>
+  <div class="header-right">
+    <div class="header-search">
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว...">
+      <button onclick="headerSearchAndGo()">🔍</button>
+    </div>
+    <span id="authArea">
+      <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
+    </span>
+  </div>
+</header>
+
+<section class="hero" style="min-height:200px;">
+  <h2 style="font-size:1.8rem;">บทความท่องเที่ยว</h2>
+  <p>เคล็ดลับ รีวิว และไอเดียการเดินทางจากทีมเที่ยวมะ</p>
+</section>
+
+<main>
+  <div class="article-list" id="articleList">
+
+    <div class="article-item">
+      <div class="thumb-sm"><img src="image/chiangmai-old-city.png" alt="10 ที่เที่ยวเชียงใหม่ ต้องไปสักครั้งในชีวิต" loading="lazy"></div>
+      <div class="content">
+        <h3>10 ที่เที่ยวเชียงใหม่ ต้องไปสักครั้งในชีวิต</h3>
+        <p>รวมจุดหมายยอดฮิตของเชียงใหม่ ตั้งแต่วัดเก่าแก่ไปจนถึงคาเฟ่วิวภูเขา เหมาะกับทริปสั้นๆ ช่วงวันหยุด</p>
+        <div class="meta">เผยแพร่ 20 มิ.ย. 2569 · หมวดหมู่: ภาคเหนือ</div>
+      </div>
+    </div>
+
+    <div class="article-item">
+      <div class="thumb-sm"><img src="image/phi-phi.jpg" alt="เที่ยวทะเลใต้ยังไงให้คุ้ม งบไม่บาน" loading="lazy"></div>
+      <div class="content">
+        <h3>เที่ยวทะเลใต้ยังไงให้คุ้ม งบไม่บาน</h3>
+        <p>เทคนิควางแผนทริปทะเลภาคใต้ ทั้งเรื่องที่พัก การเดินทาง และช่วงเวลาที่ราคาตั๋วเครื่องบินถูกที่สุด</p>
+        <div class="meta">เผยแพร่ 12 มิ.ย. 2569 · หมวดหมู่: ภาคใต้</div>
+      </div>
+    </div>
+
+    <div class="article-item">
+      <div class="thumb-sm"><img src="image/khao-yai.jpg" alt="แนะนำเส้นทางเดินป่าเขาใหญ่สำหรับมือใหม่" loading="lazy"></div>
+      <div class="content">
+        <h3>แนะนำเส้นทางเดินป่าเขาใหญ่สำหรับมือใหม่</h3>
+        <p>เส้นทางเดินป่าที่เหมาะกับผู้เริ่มต้น พร้อมของที่ควรเตรียมและข้อควรระวังก่อนออกเดินทาง</p>
+        <div class="meta">เผยแพร่ 2 มิ.ย. 2569 · หมวดหมู่: ผจญภัย</div>
+      </div>
+    </div>
+
+    <div class="article-item">
+      <div class="thumb-sm"><img src="image/ayutthaya.jpg" alt="เที่ยวอยุธยาแบบวันเดียว เที่ยวไหว ไม่ลืมจุดไหน" loading="lazy"></div>
+      <div class="content">
+        <h3>เที่ยวอยุธยาแบบวันเดียว เที่ยวไหว ไม่ลืมจุดไหน</h3>
+        <p>จัดตารางเที่ยวอยุธยาแบบวันเดียวจบ พร้อมร้านอาหารเด็ดใกล้แหล่งท่องเที่ยว</p>
+        <div class="meta">เผยแพร่ 25 พ.ค. 2569 · หมวดหมู่: ประวัติศาสตร์</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>เที่ยวมะ</h4>
+      <a href="about.html">เกี่ยวกับเรา</a>
+      <a href="articles.html">บทความท่องเที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>เมนู</h4>
+      <a href="index.html">หน้าแรก</a>
+      <a href="places.html">แนะนำที่เที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>บัญชีผู้ใช้</h4>
+      <a href="register.html">สมัครสมาชิก</a>
+      <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
+</footer>
+
+<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+
+<script src="script.js"></script>
+</body>
+</html>

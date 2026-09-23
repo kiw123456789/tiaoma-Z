@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,7 +139,7 @@ class ApiIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
-        String msg = r.getResponse().getContentAsString();
+        String msg = r.getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(msg).contains("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
     }
 

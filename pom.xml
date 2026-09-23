@@ -19,6 +19,11 @@
 
   <properties>
     <java.version>17</java.version>
+    <!-- บังคับให้ทุกขั้นตอน (compile/test/report) อ่าน-เขียนไฟล์เป็น UTF-8 เสมอ
+         กันปัญหาข้อความภาษาไทยในซอร์สโค้ดเพี้ยนตอนคอมไพล์บนเครื่อง Windows ที่ default encoding ไม่ใช่ UTF-8 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
   </properties>
 
   <dependencies>
@@ -59,6 +64,25 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- ย้ำ encoding UTF-8 ตรงๆ ที่ตัวคอมไพเลอร์ ไม่พึ่งพา default encoding ของเครื่องที่รัน -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+
+      <!-- บังคับ JVM ที่ใช้รันเทสต์ (surefire แยกโปรเซสไปรันต่างหาก) ให้ใช้ UTF-8 ด้วย
+           ไม่งั้นต่อให้คอมไพล์ถูก ตอนรันเทสต์/พิมพ์ผลลัพธ์อาจยังเพี้ยนอยู่ -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8</argLine>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -179,7 +179,7 @@ nav.main-nav {
 }
 nav.main-nav a {
   font-weight: 500;
-  color: #444;
+  color: var(--c-text);
   padding-bottom: 4px;
   border-bottom: 2px solid transparent;
 }
@@ -595,11 +595,53 @@ main {
   border-radius: 50%;
   background: radial-gradient(circle, #fff2b0 0%, #ffd54f 55%, rgba(255,213,79,0) 72%);
   animation: sun-pulse 4s ease-in-out infinite;
+  transition: background 0.6s ease;
 }
 @keyframes sun-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.1); opacity: 0.85; }
 }
+
+/* ===================== โหมดกลางคืน: ภาพซ้ายมือเปลี่ยนจากเช้าเป็นค่ำ ===================== */
+:root[data-theme="dark"] .auth-visual {
+  background: linear-gradient(180deg, #0c1c3a 0%, #16233f 55%, #1f2f42 100%);
+  transition: background 0.6s ease;
+}
+/* ดาวเต็มฟ้า วาดเป็นพื้นหลังจุดเล็กๆ อยู่ชั้นล่างสุดของภาพ */
+:root[data-theme="dark"] .auth-visual::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.4px 1.4px at 18% 18%, #fff, transparent 60%),
+    radial-gradient(1.2px 1.2px at 55% 9%,  #fff, transparent 60%),
+    radial-gradient(1px   1px   at 78% 22%, #fff, transparent 60%),
+    radial-gradient(1px   1px   at 28% 42%, #fff, transparent 60%),
+    radial-gradient(1.4px 1.4px at 88% 12%, #fff, transparent 60%),
+    radial-gradient(1px   1px   at 8%  55%, #fff, transparent 60%),
+    radial-gradient(1.3px 1.3px at 42% 6%,  #fff, transparent 60%),
+    radial-gradient(1px   1px   at 68% 35%, #fff, transparent 60%);
+  animation: night-stars-twinkle 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes night-stars-twinkle {
+  from { opacity: 0.45; }
+  to   { opacity: 0.95; }
+}
+/* ดวงจันทร์แทนที่ดวงอาทิตย์ */
+:root[data-theme="dark"] .auth-visual .sun {
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #dbe4f2 45%, rgba(219,228,242,0) 72%);
+  box-shadow: 0 0 22px rgba(219,228,242,0.4);
+}
+/* เมฆยามค่ำคืน โทนฟ้าอมเทาแทนสีดำทึบ */
+:root[data-theme="dark"] .auth-visual .cloud,
+:root[data-theme="dark"] .auth-visual .cloud::before,
+:root[data-theme="dark"] .auth-visual .cloud::after {
+  background: rgba(198, 210, 230, 0.5);
+}
+/* ภูเขาโทนเข้มขึ้นให้เข้ากับบรรยากาศกลางคืน */
+:root[data-theme="dark"] .auth-visual .mountains polygon:nth-of-type(1) { fill: #234a52; opacity: 0.6; }
+:root[data-theme="dark"] .auth-visual .mountains polygon:nth-of-type(2) { fill: #123033; opacity: 0.92; }
 
 .auth-visual .cloud {
   position: absolute;
@@ -631,18 +673,54 @@ main {
   to   { transform: translateX(480px); }
 }
 
+/* ก้อนเมฆใหญ่ลอยนิ่งกลางภาพ ให้เครื่องบินบินลอดผ่านหลัง-หน้าก้อนเมฆ */
+.auth-visual .cloud-hero {
+  top: 16%;
+  left: 46%;
+  width: 96px;
+  height: 32px;
+  z-index: 2;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08));
+}
+.auth-visual .cloud-hero::before { width: 46px; height: 46px; top: -21px; left: 12px; }
+.auth-visual .cloud-hero::after  { width: 34px; height: 34px; top: -15px; left: 52px; }
+
 .auth-visual .plane {
   position: absolute;
   top: 20%;
   left: -40px;
-  font-size: 1.7rem;
-  animation: plane-fly 11s linear infinite;
+  font-size: 1.85rem;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.18));
+  animation: plane-fly 12s ease-in-out infinite;
+}
+/* ทางควันไอพ่นลากตามหลังเครื่องบิน */
+.auth-visual .plane::before {
+  content: '';
+  position: absolute;
+  top: 55%;
+  right: 95%;
+  width: 62px;
+  height: 3px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 100%);
+  border-radius: 3px;
+  opacity: 0;
+  animation: plane-trail 12s ease-in-out infinite;
 }
 @keyframes plane-fly {
-  0%   { transform: translate(0, 0) rotate(8deg); opacity: 0; }
+  0%   { transform: translate(0, 0) rotate(6deg); opacity: 0; z-index: 1; }
   8%   { opacity: 1; }
+  40%  { transform: translate(175px, -16px) rotate(9deg); z-index: 1; }
+  50%  { transform: translate(222px, -30px) rotate(11deg); z-index: 3; }
+  60%  { transform: translate(268px, -20px) rotate(7deg); z-index: 3; }
   92%  { opacity: 1; }
-  100% { transform: translate(420px, -70px) rotate(8deg); opacity: 0; }
+  100% { transform: translate(420px, -70px) rotate(8deg); opacity: 0; z-index: 3; }
+}
+@keyframes plane-trail {
+  0%, 6%   { opacity: 0; width: 0; }
+  16%      { opacity: 0.9; width: 62px; }
+  86%      { opacity: 0.9; width: 62px; }
+  100%     { opacity: 0; width: 0; }
 }
 
 .auth-visual .mountains {
@@ -725,6 +803,102 @@ main {
   .auth-page { box-shadow: none; margin: 20px auto; min-height: auto; }
   .auth-visual { display: none; }
   .auth-card.auth-wrap { padding: 35px; }
+}
+
+/* ===================== เอฟเฟกต์เคลื่อนไหวเฉพาะหน้าสมัครสมาชิก ===================== */
+.register-page .auth-visual .star {
+  position: absolute;
+  font-size: 0.95rem;
+  opacity: 0.5;
+  animation: star-twinkle 2.4s ease-in-out infinite;
+}
+.register-page .star1 { top: 16%; left: 70px; animation-delay: 0s; }
+.register-page .star2 { top: 34%; left: 120px; font-size: 0.7rem; animation-delay: -0.9s; }
+.register-page .star3 { top: 10%; right: 110px; font-size: 0.75rem; animation-delay: -1.6s; }
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.15) rotate(15deg); }
+}
+
+.register-page .auth-visual .suitcase {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  font-size: 1.7rem;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,0.18));
+  animation: suitcase-bounce 2.8s ease-in-out infinite;
+}
+@keyframes suitcase-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-3deg); }
+  50%      { transform: translateX(-50%) translateY(-10px) rotate(3deg); }
+}
+
+/* การ์ดฟอร์มค่อยๆ ไล่ปรากฏขึ้นทีละส่วนตอนโหลดหน้า */
+.register-page .auth-card.auth-wrap h1,
+.register-page .auth-card.auth-wrap .auth-sub,
+.register-page .auth-card.auth-wrap .form-group,
+.register-page .auth-card.auth-wrap .btn-primary,
+.register-page .auth-card.auth-wrap .auth-switch {
+  opacity: 0;
+  animation: field-rise 0.55s ease-out forwards;
+}
+.register-page .auth-card.auth-wrap h1          { animation-delay: 0.05s; }
+.register-page .auth-card.auth-wrap .auth-sub   { animation-delay: 0.12s; }
+.register-page .auth-card.auth-wrap form .form-group:nth-of-type(1) { animation-delay: 0.19s; }
+.register-page .auth-card.auth-wrap form .form-group:nth-of-type(2) { animation-delay: 0.27s; }
+.register-page .auth-card.auth-wrap form .form-group:nth-of-type(3) { animation-delay: 0.35s; }
+.register-page .auth-card.auth-wrap form .form-group:nth-of-type(4) { animation-delay: 0.43s; }
+.register-page .auth-card.auth-wrap .btn-primary  { animation-delay: 0.51s; }
+.register-page .auth-card.auth-wrap .auth-switch  { animation-delay: 0.59s; }
+@keyframes field-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ปุ่มและช่องกรอกขยับตอบสนองมากขึ้น */
+.register-page .auth-card.auth-wrap .btn-primary {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.register-page .auth-card.auth-wrap .btn-primary:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 8px 18px rgba(14,124,102,0.28);
+}
+.register-page .auth-card.auth-wrap .btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+.register-page .auth-card.auth-wrap .form-group input {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+.register-page .auth-card.auth-wrap .form-group input:focus {
+  box-shadow: 0 0 0 3px var(--c-primary-soft);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register-page .auth-card.auth-wrap h1,
+  .register-page .auth-card.auth-wrap .auth-sub,
+  .register-page .auth-card.auth-wrap .form-group,
+  .register-page .auth-card.auth-wrap .btn-primary,
+  .register-page .auth-card.auth-wrap .auth-switch {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* ภาพตกแต่งฝั่งซ้าย (เมฆ พระอาทิตย์ เครื่องบิน ดาว กระเป๋า) ให้เคลื่อนไหวต่อไปเสมอ
+     แม้เครื่องผู้ใช้จะตั้งค่า "ลดการเคลื่อนไหว/ปิด Visual effects" ไว้ก็ตาม เพราะเป็นแค่ของตกแต่ง
+     ไม่ใช่เนื้อหาหรือการทำงานของฟอร์ม จึงไม่กระทบการอ่าน/ใช้งาน */
+  .auth-visual .sun          { animation-duration: 4s !important;  animation-iteration-count: infinite !important; }
+  .auth-visual .cloud1       { animation-duration: 16s !important; animation-iteration-count: infinite !important; }
+  .auth-visual .cloud2       { animation-duration: 22s !important; animation-iteration-count: infinite !important; }
+  .auth-visual .cloud3       { animation-duration: 28s !important; animation-iteration-count: infinite !important; }
+  .auth-visual .plane,
+  .auth-visual .plane::before { animation-duration: 12s !important; animation-iteration-count: infinite !important; }
+  .auth-visual .pin           { animation-duration: 3s !important;  animation-iteration-count: infinite !important; }
+  .auth-visual .star          { animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+  .auth-visual .suitcase      { animation-duration: 2.8s !important; animation-iteration-count: infinite !important; }
+  .auth-visual::before        { animation-duration: 4s !important;   animation-iteration-count: infinite !important; }
 }
 .auth-wrap h2 {
   color: var(--c-primary);
@@ -905,7 +1079,7 @@ footer.site-footer {
   gap: 30px;
   align-items: start;
 }
-.detail-main p { color: #444; margin-bottom: 16px; line-height: 1.8; }
+.detail-main p { color: var(--c-text); margin-bottom: 16px; line-height: 1.8; }
 .detail-subtitle { color: var(--c-primary); margin: 24px 0 12px; font-size: 1.15rem; }
 
 .highlight-list { list-style: none; }
@@ -1454,7 +1628,7 @@ footer.site-footer {
 .review-item .who { font-weight: 600; font-size: 0.92rem; color: var(--c-text); }
 .review-item .when { font-size: 0.76rem; color: var(--c-muted); }
 .review-item .stars { color: #f2a900; font-size: 0.95rem; }
-.review-item p { font-size: 0.9rem; color: #444; margin-top: 4px; }
+.review-item p { font-size: 0.9rem; color: var(--c-text); margin-top: 4px; }
 .review-summary {
   display: flex;
   align-items: center;

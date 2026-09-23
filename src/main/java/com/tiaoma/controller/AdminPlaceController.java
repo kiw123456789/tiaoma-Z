@@ -2,10 +2,13 @@ package com.tiaoma.controller;
 
 import com.tiaoma.dto.AdminDtos.PlaceRequest;
 import com.tiaoma.model.Place;
+import com.tiaoma.repository.LikeRepository;
 import com.tiaoma.repository.PlaceRepository;
+import com.tiaoma.repository.ReviewRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,9 +23,15 @@ import java.util.List;
 public class AdminPlaceController {
 
     private final PlaceRepository placeRepository;
+    private final LikeRepository likeRepository;
+    private final ReviewRepository reviewRepository;
 
-    public AdminPlaceController(PlaceRepository placeRepository) {
+    public AdminPlaceController(PlaceRepository placeRepository,
+                                LikeRepository likeRepository,
+                                ReviewRepository reviewRepository) {
         this.placeRepository = placeRepository;
+        this.likeRepository = likeRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @PostMapping
@@ -49,11 +58,18 @@ public class AdminPlaceController {
         return placeRepository.save(place);
     }
 
+    /**
+     * ลบสถานที่ พร้อมล้างข้อมูลที่อ้างถึงสถานที่นี้ (ที่เที่ยวโปรด + รีวิว)
+     * ไม่งั้นจะเหลือแถวกำพร้าค้างในฐานข้อมูล และหน้า "ที่เที่ยวโปรด" จะพังเพราะหา place ไม่เจอ
+     */
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> delete(@PathVariable String id) {
         if (!placeRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ไม่พบสถานที่นี้");
         }
+        likeRepository.deleteByIdPlaceId(id);
+        reviewRepository.deleteByPlaceId(id);
         placeRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# หน้าที่ไม่ต้องการให้ index (หน้าส่วนตัว / หน้าจัดการระบบ)
+Disallow: /admin.html
+Disallow: /liked.html
+Disallow: /profile.html
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /forgot-password.html
+Disallow: /reset-password.html
+Disallow: /h2-console
+Disallow: /api/
+
+# แก้เป็นโดเมนจริงตอน deploy
+Sitemap: https://tiaoma.example.com/sitemap.xml

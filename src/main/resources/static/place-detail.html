@@ -4,13 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายละเอียดสถานที่ | เที่ยวมะ</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="รายละเอียดสถานที่ท่องเที่ยว จุดเด่นที่ไม่ควรพลาด เวลาเปิด-ปิด ค่าใช้จ่าย ช่วงเวลาแนะนำ และแผนที่">
+<meta name="theme-color" content="#0e7c66">
+<link rel="canonical" href="https://tiaoma.example.com/place-detail.html">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="รายละเอียดสถานที่ | เที่ยวมะ">
+<meta property="og:description" content="รายละเอียดสถานที่ท่องเที่ยว จุดเด่นที่ไม่ควรพลาด เวลาเปิด-ปิด ค่าใช้จ่าย ช่วงเวลาแนะนำ และแผนที่">
+<meta property="og:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/place-detail.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="รายละเอียดสถานที่ | เที่ยวมะ">
+<meta name="twitter:description" content="รายละเอียดสถานที่ท่องเที่ยว จุดเด่นที่ไม่ควรพลาด เวลาเปิด-ปิด ค่าใช้จ่าย ช่วงเวลาแนะนำ และแผนที่">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+
 <header class="site-header">
   <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
-  <nav class="main-nav">
+  <nav class="main-nav" aria-label="เมนูหลัก">
     <a href="index.html">หน้าแรก</a>
     <a href="places.html" class="active">แนะนำที่เที่ยว</a>
     <a href="articles.html">บทความ</a>
@@ -18,8 +47,8 @@
   </nav>
   <div class="header-right">
     <div class="header-search">
-      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว...">
-      <button onclick="headerSearchAndGo()">🔍</button>
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว..." aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
     </div>
     <span id="authArea">
       <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
@@ -27,7 +56,7 @@
   </div>
 </header>
 
-<main>
+<main id="main">
   <div id="placeDetailRoot">
     <!-- เนื้อหาถูกสร้างขึ้นอัตโนมัติโดย script.js ตาม ?id= ใน URL -->
   </div>
@@ -54,9 +83,9 @@
   <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
 </footer>
 
-<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
 
-<script src="places-data.js?v=2"></script>
-<script src="script.js"></script>
+<script src="places-data.js?v=3"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>

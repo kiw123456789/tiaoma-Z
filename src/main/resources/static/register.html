@@ -4,13 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สมัครสมาชิก | เที่ยวมะ</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="สมัครสมาชิกเที่ยวมะฟรี เพื่อบันทึกที่เที่ยวโปรดและวางแผนการเดินทาง">
+<meta name="theme-color" content="#0e7c66">
+<meta name="robots" content="noindex, nofollow">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="สมัครสมาชิก | เที่ยวมะ">
+<meta property="og:description" content="สมัครสมาชิกเที่ยวมะฟรี เพื่อบันทึกที่เที่ยวโปรดและวางแผนการเดินทาง">
+<meta property="og:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/register.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="สมัครสมาชิก | เที่ยวมะ">
+<meta name="twitter:description" content="สมัครสมาชิกเที่ยวมะฟรี เพื่อบันทึกที่เที่ยวโปรดและวางแผนการเดินทาง">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+
 <header class="site-header">
   <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
-  <nav class="main-nav">
+  <nav class="main-nav" aria-label="เมนูหลัก">
     <a href="index.html">หน้าแรก</a>
     <a href="places.html">แนะนำที่เที่ยว</a>
     <a href="articles.html">บทความ</a>
@@ -21,7 +50,7 @@
   </div>
 </header>
 
-<main>
+<main id="main">
   <div class="auth-page">
     <div class="auth-visual">
       <div class="sun"></div>
@@ -43,7 +72,7 @@
     </div>
 
     <div class="auth-card auth-wrap">
-      <h2>สมัครสมาชิก</h2>
+      <h1>สมัครสมาชิก</h1>
       <p class="auth-sub">สมัครสมาชิกฟรี เพื่อบันทึกที่เที่ยวโปรดของคุณ</p>
 
       <div class="form-success" id="regSuccess"></div>
@@ -60,7 +89,8 @@
         </div>
         <div class="form-group">
           <label for="regPassword">รหัสผ่าน</label>
-          <input type="password" id="regPassword" placeholder="อย่างน้อย 6 ตัวอักษร">
+          <input type="password" id="regPassword" placeholder="อย่างน้อย 8 ตัวอักษร มีตัวเลขผสม" autocomplete="new-password">
+          <div class="password-meter" id="regPwMeter"></div>
         </div>
         <div class="form-group">
           <label for="regConfirm">ยืนยันรหัสผ่าน</label>
@@ -97,8 +127,8 @@
   <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
 </footer>
 
-<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
 
-<script src="script.js"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>

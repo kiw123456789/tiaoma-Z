@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บัญชีของฉัน | เที่ยวมะ</title>
+<meta name="description" content="จัดการบัญชีผู้ใช้ เปลี่ยนชื่อและรหัสผ่านของคุณ">
+<meta name="theme-color" content="#0e7c66">
+<meta name="robots" content="noindex, nofollow">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="บัญชีของฉัน | เที่ยวมะ">
+<meta property="og:description" content="จัดการบัญชีผู้ใช้ เปลี่ยนชื่อและรหัสผ่านของคุณ">
+<meta property="og:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/profile.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="บัญชีของฉัน | เที่ยวมะ">
+<meta name="twitter:description" content="จัดการบัญชีผู้ใช้ เปลี่ยนชื่อและรหัสผ่านของคุณ">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+
+<header class="site-header">
+  <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
+  <nav class="main-nav" aria-label="เมนูหลัก">
+    <a href="index.html">หน้าแรก</a>
+    <a href="places.html">แนะนำที่เที่ยว</a>
+    <a href="articles.html">บทความ</a>
+    <a href="about.html">เที่ยวกับเรา</a>
+  </nav>
+  <div class="header-right">
+    <div class="header-search">
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว..." aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
+    </div>
+    <span id="authArea">
+      <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
+    </span>
+  </div>
+</header>
+
+<section class="hero hero--compact">
+  <h1>👤 บัญชีของฉัน</h1>
+  <p>จัดการชื่อที่แสดง รหัสผ่าน และข้อมูลบัญชีของคุณ</p>
+</section>
+
+<main id="main">
+  <div id="profileRoot">
+    <!-- เนื้อหาถูกสร้างอัตโนมัติโดย script.js ตามผู้ใช้ที่ล็อกอินอยู่ -->
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>เที่ยวมะ</h4>
+      <a href="about.html">เกี่ยวกับเรา</a>
+      <a href="articles.html">บทความท่องเที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>เมนู</h4>
+      <a href="index.html">หน้าแรก</a>
+      <a href="places.html">แนะนำที่เที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>บัญชีผู้ใช้</h4>
+      <a href="register.html">สมัครสมาชิก</a>
+      <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
+</footer>
+
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
+
+<script src="places-data.js?v=3"></script>
+<script src="script.js?v=3"></script>
+</body>
+</html>

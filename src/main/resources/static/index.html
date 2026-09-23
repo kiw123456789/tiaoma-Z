@@ -4,15 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เที่ยวมะ | แนะนำสถานที่ท่องเที่ยวทั่วไทย</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="รวมที่เที่ยวเด็ดทั่วไทยจากทุกภาค พร้อมข้อมูลวางแผนทริป เวลาเปิด-ปิด ค่าเข้า และช่วงเวลาที่ควรไป — เที่ยวไทยง่ายนิดเดียวกับเที่ยวมะ">
+<meta name="theme-color" content="#0e7c66">
+<link rel="canonical" href="https://tiaoma.example.com/">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="เที่ยวมะ | แนะนำสถานที่ท่องเที่ยวทั่วไทย">
+<meta property="og:description" content="รวมที่เที่ยวเด็ดทั่วไทยจากทุกภาค พร้อมข้อมูลวางแผนทริป เวลาเปิด-ปิด ค่าเข้า และช่วงเวลาที่ควรไป — เที่ยวไทยง่ายนิดเดียวกับเที่ยวมะ">
+<meta property="og:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="เที่ยวมะ | แนะนำสถานที่ท่องเที่ยวทั่วไทย">
+<meta name="twitter:description" content="รวมที่เที่ยวเด็ดทั่วไทยจากทุกภาค พร้อมข้อมูลวางแผนทริป เวลาเปิด-ปิด ค่าเข้า และช่วงเวลาที่ควรไป — เที่ยวไทยง่ายนิดเดียวกับเที่ยวมะ">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
+
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
 
 <!-- ===== Header : ส่วนหัวของเว็บแอปพลิเคชัน ===== -->
 <header class="site-header">
   <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
 
-  <nav class="main-nav">
+  <nav class="main-nav" aria-label="เมนูหลัก">
     <a href="index.html" class="active">หน้าแรก</a>
     <a href="places.html">แนะนำที่เที่ยว</a>
     <a href="articles.html">บทความ</a>
@@ -21,8 +50,8 @@
 
   <div class="header-right">
     <div class="header-search">
-      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว... (ทะเล, ภูเขา)">
-      <button onclick="headerSearchAndGo()">🔍</button>
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว... (ทะเล, ภูเขา)" aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
     </div>
     <span id="authArea">
       <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
@@ -35,15 +64,15 @@
   <h2>ค้นพบที่เที่ยวโดนใจ...</h2>
   <p>เที่ยวไทยง่ายนิดเดียว! รวมที่เที่ยวเด็ดๆ จากทุกมุมไทยที่คุณต้องไปสัมผัส</p>
   <div class="hero-search">
-    <input type="text" id="heroSearchInput" placeholder="ค้นหาที่เที่ยว... (ทะเล, ภูเขา)">
+    <input type="text" id="heroSearchInput" placeholder="ค้นหาที่เที่ยว... (ทะเล, ภูเขา)" aria-label="ค้นหาที่เที่ยว">
     <button onclick="heroSearchAndGo()">ค้นหาที่เที่ยว</button>
   </div>
 </section>
 
 <!-- ===== Main : ส่วนเนื้อหาหลักของเว็บแอปพลิเคชัน ===== -->
-<main>
+<main id="main">
 
-  <h2 class="section-title">สถานที่ท่องเที่ยวแนะนำ</h2>
+  <h1 class="section-title">สถานที่ท่องเที่ยวแนะนำ</h1>
   <p class="section-sub">เลือกจุดหมายปลายทางยอดนิยมที่นักท่องเที่ยวชื่นชอบ</p>
 
   <section class="places-grid" id="places" data-mode="home">
@@ -78,9 +107,9 @@
   <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
 </footer>
 
-<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
 
-<script src="places-data.js"></script>
-<script src="script.js"></script>
+<script src="places-data.js?v=3"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>

@@ -4,7 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>แนะนำที่เที่ยว | เที่ยวมะ</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<meta name="theme-color" content="#0e7c66">
+<link rel="canonical" href="https://tiaoma.example.com/places.html">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="แนะนำที่เที่ยว | เที่ยวมะ">
+<meta property="og:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<meta property="og:image" content="https://tiaoma.example.com/image/phi-phi.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/places.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="แนะนำที่เที่ยว | เที่ยวมะ">
+<meta name="twitter:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/phi-phi.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
 <style>
   /* ===== แถบค้นหา/กรอง (places.html) — ปรับใหม่ให้ดูมีมิติกว่า select ธรรมดา ===== */
   .tm-filterbar{
@@ -47,6 +74,9 @@
   .tm-pill:focus-within::after{ border-color:#1a7a5e; }
   .tm-pill--category:focus-within{ border-color:#c9871f; box-shadow:0 0 0 3px rgba(201,135,31,.14); }
   .tm-pill--category:focus-within::after{ border-color:#c9871f; }
+  .tm-pill--sort::before{ content:"↕️"; }
+  .tm-pill--sort:focus-within{ border-color:#5b6fc9; box-shadow:0 0 0 3px rgba(91,111,201,.14); }
+  .tm-pill--sort:focus-within::after{ border-color:#5b6fc9; }
   .tm-pill select{
     appearance:none; -webkit-appearance:none; border:none; background:none;
     padding:12px 4px; font-size:14.5px; color:#2b2b2b; width:100%;
@@ -61,9 +91,11 @@
 </head>
 <body>
 
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+
 <header class="site-header">
   <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
-  <nav class="main-nav">
+  <nav class="main-nav" aria-label="เมนูหลัก">
     <a href="index.html">หน้าแรก</a>
     <a href="places.html" class="active">แนะนำที่เที่ยว</a>
     <a href="articles.html">บทความ</a>
@@ -71,8 +103,8 @@
   </nav>
   <div class="header-right">
     <div class="header-search">
-      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว...">
-      <button onclick="headerSearchAndGo()">🔍</button>
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว..." aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
     </div>
     <span id="authArea">
       <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
@@ -80,18 +112,18 @@
   </div>
 </header>
 
-<section class="hero" style="min-height:200px;">
-  <h2 style="font-size:1.8rem;">แนะนำที่เที่ยวทั่วไทย</h2>
+<section class="hero hero--compact">
+  <h1>แนะนำที่เที่ยวทั่วไทย</h1>
   <p>เลือกจุดหมายที่ใช่ แล้วออกเดินทางไปกับเที่ยวมะ</p>
 </section>
 
-<main>
+<main id="main">
   <div class="search-box tm-filterbar">
     <div class="tm-search">
-      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อสถานที่ที่ต้องการค้นหา...">
+      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อสถานที่ที่ต้องการค้นหา..." aria-label="ค้นหาชื่อสถานที่">
     </div>
     <div class="tm-pill tm-pill--region">
-      <select id="regionFilter">
+      <select id="regionFilter" aria-label="กรองตามภาค">
         <option value="">ทุกภาค</option>
         <option value="เหนือ">ภาคเหนือ</option>
         <option value="ตะวันออกเฉียงเหนือ">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
@@ -102,7 +134,7 @@
       </select>
     </div>
     <div class="tm-pill tm-pill--category">
-      <select id="categoryFilter">
+      <select id="categoryFilter" aria-label="กรองตามประเภท">
         <option value="">ทุกประเภท</option>
         <option value="ภูเขา">ภูเขา / ธรรมชาติ</option>
         <option value="ทะเล">ทะเล / เกาะ</option>
@@ -110,6 +142,15 @@
         <option value="ประวัติศาสตร์">ประวัติศาสตร์</option>
       </select>
     </div>
+    <div class="tm-pill tm-pill--sort">
+      <select id="sortFilter" aria-label="เรียงลำดับ">
+        <option value="">เรียงตามค่าเริ่มต้น</option>
+        <option value="popular">ยอดนิยม (คนบันทึกมากสุด)</option>
+        <option value="rating">คะแนนรีวิวสูงสุด</option>
+        <option value="name">ชื่อ ก-ฮ</option>
+      </select>
+    </div>
+    <button type="button" id="clearFilters" class="btn-outline" style="border-radius:999px;">ล้างตัวกรอง</button>
   </div>
 
   <section class="places-sections" id="places" data-mode="all">
@@ -138,9 +179,9 @@
   <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
 </footer>
 
-<button id="back-to-top" onclick="scrollToTop()">⬆</button>
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
 
-<script src="places-data.js"></script>
-<script src="script.js"></script>
+<script src="places-data.js?v=3"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>

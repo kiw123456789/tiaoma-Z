@@ -1,0 +1,43 @@
+# ===== Build output =====
+target/
+build/
+*.class
+*.jar
+*.war
+
+# ===== ฐานข้อมูล H2 (ข้อมูลผู้ใช้จริง ห้าม commit เด็ดขาด) =====
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# ===== รูปที่แอดมินอัปโหลดผ่านหน้าจัดการเนื้อหา =====
+uploads/
+
+# ===== ไฟล์ตั้งค่าที่มีความลับ (รหัสผ่าน / SMTP) =====
+src/main/resources/application-local.properties
+src/main/resources/application-prod.properties
+.env
+.env.*
+
+# ===== IDE =====
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/private/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Maven wrapper (เก็บ mvnw ไว้ แต่ไม่เก็บ jar) =====
+.mvn/wrapper/maven-wrapper.jar

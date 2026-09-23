@@ -1,0 +1,44 @@
+# ===========================================================
+# ตัวอย่างไฟล์ตั้งค่าสำหรับขึ้นระบบจริง (production)
+#
+# วิธีใช้:
+#   1. คัดลอกไฟล์นี้เป็น application-prod.properties  (ไฟล์จริงถูก .gitignore ไว้แล้ว)
+#   2. แก้ค่าให้ครบ โดยเฉพาะรหัสผ่านและ SMTP
+#   3. รันด้วย:  java -jar target/tiaoma-backend-1.0.0.jar --spring.profiles.active=prod
+#
+# หรือจะตั้งเป็น environment variable ทั้งหมดก็ได้ (แนะนำกว่า) เพราะ
+# application.properties อ่านค่าจาก env ให้อยู่แล้ว เช่น APP_ADMIN_PASSWORD, COOKIE_SECURE
+# ===========================================================
+
+# ---- ปิดทุกอย่างที่เป็นเครื่องมือตอนพัฒนา ----
+spring.h2.console.enabled=false
+spring.jpa.show-sql=false
+
+# ---- ความปลอดภัยของ cookie (ต้องรันหลัง HTTPS) ----
+server.servlet.session.cookie.secure=true
+server.servlet.session.cookie.same-site=strict
+
+# ---- URL จริงของเว็บ ใช้ประกอบลิงก์ในอีเมลรีเซ็ตรหัสผ่าน ----
+app.public-base-url=https://your-domain.com
+
+# ---- บัญชีแอดมินคนแรก ----
+# ห้ามใช้รหัสผ่านตัวอย่าง และควรเปลี่ยนรหัสผ่านทันทีหลังล็อกอินครั้งแรก
+app.admin.email=admin@your-domain.com
+app.admin.password=CHANGE_ME_STRONG_PASSWORD
+
+# ---- อีเมล (จำเป็นสำหรับฟีเจอร์ลืมรหัสผ่าน) ----
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your@gmail.com
+spring.mail.password=your-app-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+app.mail.from=เที่ยวมะ <no-reply@your-domain.com>
+
+# ---- ฐานข้อมูล ----
+# แนะนำให้ย้ายจาก H2 ไป PostgreSQL เมื่อขึ้นระบบจริง
+# spring.datasource.url=jdbc:postgresql://localhost:5432/tiaoma
+# spring.datasource.driver-class-name=org.postgresql.Driver
+# spring.datasource.username=tiaoma
+# spring.datasource.password=...
+# spring.jpa.hibernate.ddl-auto=validate

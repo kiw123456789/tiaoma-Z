@@ -196,7 +196,7 @@ function renderPlaceForm() {
             <input type="number" id="pAccent" min="1" max="6" value="${isEdit ? place.accent : 1}">
           </div>
         </div>
-        <p class="admin-hint">เลือกไฟล์รูปจากเครื่องได้เลย ระบบจะแนบรูปไว้ในตัวข้อมูลให้อัตโนมัติ (ไม่ต้องอัปโหลดเข้าโฟลเดอร์ image/ เอง) — รูปควรกว้างอย่างน้อย 1200px ไม่งั้นจะเบลอตอนแสดงผลใหญ่ในหน้ารายละเอียด</p>
+        <p class="admin-hint">เลือกไฟล์รูปจากเครื่องได้เลย ระบบจะอัปโหลดเก็บเป็นไฟล์บนเซิร์ฟเวอร์ให้อัตโนมัติ (สูงสุด 5 MB) — รูปควรกว้างอย่างน้อย 1200px ไม่งั้นจะเบลอตอนแสดงผลใหญ่ในหน้ารายละเอียด</p>
         <button type="submit" class="btn-primary">${isEdit ? 'บันทึกการแก้ไข' : 'เพิ่มสถานที่'}</button>
         ${isEdit ? '<button type="button" class="btn-outline" onclick="cancelEditPlace()" style="margin-left:10px;">ยกเลิก</button>' : ''}
       </form>
@@ -294,9 +294,14 @@ function applyBulkPlaceParse() {
   alert('แยกข้อมูลเรียบร้อย ✅ เลื่อนลงไปตรวจทานแต่ละช่องอีกทีก่อนกด "บันทึก" ได้เลย');
 }
 
-/* อ่านไฟล์รูปที่ผู้ใช้เลือกจากเครื่อง แปลงเป็น data URL แล้วเก็บลง hidden input (ค่าที่จะถูกส่งไป backend จริง)
-   พร้อมอัปเดตรูปตัวอย่างและเตือนถ้าความละเอียดแคบเกินไป — ไม่ต้องอัปโหลดเข้าโฟลเดอร์ image/ เองแล้ว */
-function handleImageFileSelect(fileInputId, hiddenInputId, previewId, hintId, minWidth = 1200) {
+/* อัปโหลดไฟล์รูปที่ผู้ใช้เลือกไปเก็บเป็นไฟล์จริงบนเซิร์ฟเวอร์ (POST /api/admin/uploads)
+   แล้วเก็บแค่ "พาธ" ลง hidden input
+
+   เดิมฟังก์ชันนี้แปลงรูปเป็น base64 data URL แล้วยัดลงฐานข้อมูล ซึ่งทำให้
+   - JSON ของ /api/places ใหญ่มาก (ส่งรูปทุกใบมาด้วยทุกครั้งที่เปิดหน้า)
+   - เบราว์เซอร์ cache รูปไม่ได้เลย
+   - ฐานข้อมูลบวมเร็วและไม่มีการจำกัดขนาดไฟล์ */
+async function handleImageFileSelect(fileInputId, hiddenInputId, previewId, hintId, minWidth = 1200) {
   const fileInput = document.getElementById(fileInputId);
   const hidden = document.getElementById(hiddenInputId);
   const preview = document.getElementById(previewId);
@@ -310,30 +315,47 @@ function handleImageFileSelect(fileInputId, hiddenInputId, previewId, hintId, mi
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataUrl = reader.result;
-    if (hidden) hidden.value = dataUrl;
+  const MAX_MB = 5;
+  if (file.size > MAX_MB * 1024 * 1024) {
+    if (hint) {
+      hint.textContent = `⚠️ ไฟล์ใหญ่เกินไป (${(file.size / 1024 / 1024).toFixed(1)} MB) สูงสุด ${MAX_MB} MB กรุณาย่อรูปก่อน`;
+      hint.className = 'image-check-hint warning';
+    }
+    fileInput.value = '';
+    return;
+  }
 
-    const img = new Image();
-    img.onload = () => {
-      if (preview) { preview.src = dataUrl; preview.style.display = ''; }
-      if (hint) {
-        if (img.naturalWidth < minWidth) {
-          hint.textContent = `⚠️ รูปนี้กว้างแค่ ${img.naturalWidth}px แนะนำอย่างน้อย ${minWidth}px ไม่งั้นจะเบลอตอนแสดงผลใหญ่ในหน้ารายละเอียด`;
-          hint.className = 'image-check-hint warning';
-        } else {
-          hint.textContent = `✅ ความละเอียด ${img.naturalWidth}×${img.naturalHeight}px เพียงพอ ไม่น่าเบลอ`;
-          hint.className = 'image-check-hint ok';
-        }
+  if (hint) { hint.textContent = '⏳ กำลังอัปโหลด...'; hint.className = 'image-check-hint'; }
+
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    // ไม่ตั้ง Content-Type เอง ให้เบราว์เซอร์ใส่ boundary ของ multipart ให้
+    const res = await fetch('/api/admin/uploads', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: form
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      throw new Error((data && data.message) || 'อัปโหลดไม่สำเร็จ');
+    }
+
+    if (hidden) hidden.value = data.url;
+    if (preview) { preview.src = data.url; preview.style.display = ''; }
+    if (hint) {
+      if (data.warning) {
+        hint.textContent = '⚠️ ' + data.warning;
+        hint.className = 'image-check-hint warning';
+      } else {
+        hint.textContent = `✅ อัปโหลดแล้ว (กว้าง ${data.width}px, ${(data.sizeBytes / 1024).toFixed(0)} KB)`;
+        hint.className = 'image-check-hint ok';
       }
-    };
-    img.src = dataUrl;
-  };
-  reader.onerror = () => {
-    if (hint) { hint.textContent = '⚠️ ไม่สามารถอ่านไฟล์นี้ได้ ลองเลือกไฟล์ใหม่อีกครั้ง'; hint.className = 'image-check-hint warning'; }
-  };
-  reader.readAsDataURL(file);
+    }
+  } catch (e) {
+    if (hint) { hint.textContent = '⚠️ ' + e.message; hint.className = 'image-check-hint warning'; }
+    fileInput.value = '';
+  }
 }
 
 /* ตอนเปิดฟอร์ม (โดยเฉพาะตอนแก้ไขของเดิม) แสดงรูปตัวอย่างจากค่าที่มีอยู่แล้ว และเช็คความละเอียดให้ทันที */
@@ -360,7 +382,7 @@ function initImagePreview(hiddenInputId, previewId, hintId, minWidth = 1200) {
     }
   };
   img.onerror = () => {
-    hint.textContent = '⚠️ ยังไม่พบไฟล์รูปที่พาธนี้ — ตรวจว่าอัปโหลดไฟล์ไปไว้ที่โฟลเดอร์ image/ แล้วหรือยัง';
+    hint.textContent = '⚠️ ยังไม่พบไฟล์รูปที่พาธนี้ — ลองอัปโหลดรูปใหม่อีกครั้ง';
     hint.classList.add('warning');
   };
   img.src = path;

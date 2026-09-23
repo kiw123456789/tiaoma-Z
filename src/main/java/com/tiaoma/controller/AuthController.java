@@ -6,6 +6,7 @@ import com.tiaoma.dto.AuthDtos.RegisterRequest;
 import com.tiaoma.dto.AuthDtos.ResetPasswordRequest;
 import com.tiaoma.model.User;
 import com.tiaoma.repository.UserRepository;
+import com.tiaoma.security.RateLimitFilter;
 import com.tiaoma.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,14 +36,17 @@ public class AuthController {
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RateLimitFilter rateLimitFilter;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
     public AuthController(AuthService authService,
                           AuthenticationManager authenticationManager,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          RateLimitFilter rateLimitFilter) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @PostMapping("/register")
@@ -64,6 +68,10 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "อีเมลหรือรหัสผ่านไม่ถูกต้อง หากยังไม่มีบัญชี กรุณาสมัครสมาชิกก่อน");
         }
+
+        // ล็อกอินสำเร็จแล้ว ล้างตัวนับความพยายามล็อกอินของ IP นี้
+        // คนที่พิมพ์รหัสผ่านผิดไปสองสามครั้งก่อนจะจำได้ จะได้ไม่โดนล็อกทิ้งไว้ยาว
+        rateLimitFilter.resetLogin(request);
 
         // กัน session fixation: ถ้ามี session เดิมอยู่ให้เปลี่ยน id ก่อน
         if (request.getSession(false) != null) {

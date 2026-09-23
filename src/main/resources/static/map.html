@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script>
+  /* ตั้งธีมก่อนเบราว์เซอร์วาดหน้า กันจอขาวกระพริบตอนโหลดในโหมดมืด */
+  (function () {
+    try {
+      var saved = localStorage.getItem('tiaoma-theme');
+      var dark = saved ? saved === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) { /* localStorage ถูกปิด ใช้โหมดสว่างไป */ }
+  })();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผนที่ที่เที่ยวทั่วไทย | เที่ยวมะ</title>
+<meta name="description" content="ดูที่เที่ยวทั่วไทยทั้งหมดบนแผนที่เดียว เลือกจังหวัดหรือภาคที่สนใจ แล้วดูตำแหน่งจริงได้ทันที">
+<meta name="theme-color" content="#0e7c66" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171a" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://tiaoma.example.com/map.html">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="แผนที่ที่เที่ยวทั่วไทย | เที่ยวมะ">
+<meta property="og:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<meta property="og:image" content="https://tiaoma.example.com/image/phi-phi.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/map.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="แนะนำที่เที่ยว | เที่ยวมะ">
+<meta name="twitter:description" content="แนะนำสถานที่ท่องเที่ยวทั่วไทย แยกตามภาคเหนือ อีสาน กลาง ตะวันออก ตะวันตก และใต้ ค้นหาและกรองตามประเภทได้ทันที">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/phi-phi.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย: โหลดจากเครื่องผู้ใช้ก่อน ถ้าไม่มีค่อย fallback (ดู --font-thai ใน style.css) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=4">
+<style>
+  /* ===== แถบค้นหา/กรอง (places.html) — ปรับใหม่ให้ดูมีมิติกว่า select ธรรมดา ===== */
+  .tm-filterbar{
+    display:flex; justify-content:center; align-items:stretch; gap:12px;
+    flex-wrap:wrap; margin-bottom:34px;
+  }
+  .tm-search{
+    position:relative; display:flex; align-items:center;
+  }
+  .tm-search::before{
+    content:"🔍"; position:absolute; left:18px; font-size:14px; opacity:.55; pointer-events:none;
+  }
+  .tm-search input{
+    padding:12px 20px 12px 42px; border:1.5px solid #e1ddd3; border-radius:999px;
+    width:280px; font-size:14.5px; background:#fffdfa;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .tm-search input:focus{
+    outline:none; border-color:#1a7a5e; box-shadow:0 0 0 3px rgba(26,122,94,.12);
+  }
+  .tm-pill{
+    position:relative; display:flex; align-items:center;
+    border:1.5px solid #e1ddd3; border-radius:999px; background:#fffdfa;
+    padding:0 38px 0 16px; min-width:168px;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+  }
+  .tm-pill:hover{ transform:translateY(-1px); box-shadow:0 3px 10px rgba(0,0,0,.06); }
+  .tm-pill::before{
+    font-size:15px; margin-right:9px; line-height:1;
+  }
+  .tm-pill--region::before{ content:"🗺️"; }
+  .tm-pill--category::before{ content:"🏷️"; }
+  .tm-pill::after{
+    content:""; position:absolute; right:16px; top:50%; width:9px; height:9px;
+    border-right:2px solid #9a9284; border-bottom:2px solid #9a9284;
+    transform:translateY(-65%) rotate(45deg); pointer-events:none;
+    transition:border-color .15s ease;
+  }
+  .tm-pill:focus-within{ border-color:#1a7a5e; box-shadow:0 0 0 3px rgba(26,122,94,.12); }
+  .tm-pill:focus-within::after{ border-color:#1a7a5e; }
+  .tm-pill--category:focus-within{ border-color:#c9871f; box-shadow:0 0 0 3px rgba(201,135,31,.14); }
+  .tm-pill--category:focus-within::after{ border-color:#c9871f; }
+  .tm-pill--sort::before{ content:"↕️"; }
+  .tm-pill--sort:focus-within{ border-color:#5b6fc9; box-shadow:0 0 0 3px rgba(91,111,201,.14); }
+  .tm-pill--sort:focus-within::after{ border-color:#5b6fc9; }
+  .tm-pill select{
+    appearance:none; -webkit-appearance:none; border:none; background:none;
+    padding:12px 4px; font-size:14.5px; color:#2b2b2b; width:100%;
+    cursor:pointer;
+  }
+  .tm-pill select:focus{ outline:none; }
+  @media (max-width:600px){
+    .tm-search input{ width:100%; }
+    .tm-filterbar{ width:100%; }
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+<header class="site-header">
+  <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
+  <nav class="main-nav" aria-label="เมนูหลัก">
+    <a href="index.html">หน้าแรก</a>
+    <a href="places.html">แนะนำที่เที่ยว</a>
+    <a href="map.html" class="active">แผนที่</a>
+    <a href="articles.html">บทความ</a>
+    <a href="about.html">เที่ยวกับเรา</a>
+  </nav>
+  <div class="header-right">
+    <div class="header-search">
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว..." aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle"
+            aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง/มืด">
+      <span class="icon-light" aria-hidden="true">🌙</span><span class="icon-dark" aria-hidden="true">☀️</span>
+    </button>
+    <span id="authArea">
+      <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
+    </span>
+  </div>
+</header>
+
+<section class="hero hero--compact">
+  <h1>แผนที่ที่เที่ยวทั่วไทย</h1>
+  <p>เลือกที่เที่ยวจากรายการ แล้วดูตำแหน่งจริงบนแผนที่ได้ทันที</p>
+</section>
+
+<main id="main">
+  <div class="map-page">
+    <aside class="map-sidebar">
+      <div class="map-filters">
+        <label class="sr-only" for="mapRegionFilter">กรองตามภาค</label>
+        <select id="mapRegionFilter" aria-label="กรองตามภาค">
+          <option value="">ทุกภาค</option>
+          <option value="เหนือ">ภาคเหนือ</option>
+          <option value="ตะวันออกเฉียงเหนือ">ภาคตะวันออกเฉียงเหนือ (อีสาน)</option>
+          <option value="กลาง">ภาคกลาง</option>
+          <option value="ตะวันออก">ภาคตะวันออก</option>
+          <option value="ตะวันตก">ภาคตะวันตก</option>
+          <option value="ใต้">ภาคใต้</option>
+        </select>
+        <input type="search" id="mapSearchInput" placeholder="ค้นหาชื่อที่เที่ยว..." aria-label="ค้นหาที่เที่ยวในแผนที่">
+      </div>
+      <p class="map-count" id="mapCount" role="status" aria-live="polite"></p>
+      <ul class="map-list" id="mapList" aria-label="รายชื่อที่เที่ยว"></ul>
+    </aside>
+
+    <section class="map-view" aria-label="แผนที่">
+      <div class="map-embed-box">
+        <iframe id="mapFrame" title="แผนที่ที่เที่ยว" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
+      <div class="map-current" id="mapCurrent"></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>เที่ยวมะ</h4>
+      <a href="about.html">เกี่ยวกับเรา</a>
+      <a href="articles.html">บทความท่องเที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>เมนู</h4>
+      <a href="index.html">หน้าแรก</a>
+      <a href="places.html">แนะนำที่เที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>บัญชีผู้ใช้</h4>
+      <a href="register.html">สมัครสมาชิก</a>
+      <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
+</footer>
+
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
+
+<script src="places-data.js?v=4"></script>
+<script src="script.js?v=4"></script>
+</body>
+</html>

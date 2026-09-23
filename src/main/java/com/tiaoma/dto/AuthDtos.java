@@ -2,12 +2,22 @@ package com.tiaoma.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class AuthDtos {
 
     private AuthDtos() {
     }
+
+    /**
+     * รหัสผ่านต้องมีทั้งตัวอักษร (อังกฤษหรือไทย) และตัวเลขผสมกัน
+     * ตรวจฝั่งเซิร์ฟเวอร์ด้วย ไม่ใช่แค่ฝั่งหน้าเว็บ เพราะ JS ถูกข้ามได้ง่าย
+     */
+    private static final String PASSWORD_PATTERN =
+            "^(?=.*[A-Za-z\\u0E00-\\u0E7F])(?=.*\\d).{8,72}$";
+    private static final String PASSWORD_MESSAGE =
+            "รหัสผ่านต้องมี 8-72 ตัวอักษร และมีทั้งตัวอักษรกับตัวเลขผสมกัน";
 
     public record RegisterRequest(
             @NotBlank(message = "กรุณากรอกชื่อ-นามสกุล")
@@ -20,7 +30,7 @@ public final class AuthDtos {
             String email,
 
             @NotBlank(message = "กรุณากรอกรหัสผ่าน")
-            @Size(min = 6, max = 72, message = "รหัสผ่านต้องมี 6-72 ตัวอักษร")
+            @Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
             String password) {
     }
 
@@ -39,7 +49,7 @@ public final class AuthDtos {
             @NotBlank(message = "ลิงก์ไม่ถูกต้อง") String token,
 
             @NotBlank(message = "กรุณากรอกรหัสผ่านใหม่")
-            @Size(min = 6, max = 72, message = "รหัสผ่านต้องมี 6-72 ตัวอักษร")
+            @Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE)
             String password) {
     }
 }

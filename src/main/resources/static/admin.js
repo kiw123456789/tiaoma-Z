@@ -347,9 +347,13 @@ async function handleImageFileSelect(fileInputId, hiddenInputId, previewId, hint
       if (data.warning) {
         hint.textContent = '⚠️ ' + data.warning;
         hint.className = 'image-check-hint warning';
-      } else {
+        } else {
         hint.textContent = `✅ อัปโหลดแล้ว (กว้าง ${data.width}px, ${(data.sizeBytes / 1024).toFixed(0)} KB)`;
         hint.className = 'image-check-hint ok';
+      }
+      // ข้อมูลเสริมว่าบีบไปเท่าไร แสดงต่อท้าย (ไม่ว่า warning หรือไม่งั้นเงียบหาย)
+      if (data.info) {
+        hint.textContent += '\n' + data.info;
       }
     }
   } catch (e) {

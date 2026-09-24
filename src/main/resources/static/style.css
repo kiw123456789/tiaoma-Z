@@ -1373,6 +1373,7 @@ footer.site-footer {
 }
 .image-check-hint.warning { color: #c0392b; }
 .image-check-hint.ok { color: var(--c-primary); }
+.image-check-hint { white-space: pre-line; } /* ให้ \n ที่แทรกข้อมูลบีบอัดขึ้นบรรทัดใหม่ */
 
 .admin-form .btn-primary,
 .admin-form .btn-outline {

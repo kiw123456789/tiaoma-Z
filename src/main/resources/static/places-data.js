@@ -7,7 +7,7 @@
    GET /api/places แทน (ดูฟังก์ชัน loadPlaces() ใน script.js ที่เติมค่าตัวแปรนี้ตอนโหลดหน้า)
 ========================================================== */
 
-let PLACES = [];
+var PLACES = [];
 
 function getPlaceById(id) {
   return PLACES.find(p => p.id === id) || null;

@@ -262,13 +262,13 @@ function applyBulkPlaceParse() {
   const box = document.getElementById('pBulkPaste');
   const raw = box ? box.value : '';
   if (!raw || !raw.trim()) {
-    alert('ยังไม่ได้พิมพ์หรือวางข้อมูลอะไรเลย');
+    toast('ยังไม่ได้พิมพ์หรือวางข้อมูลอะไรเลย', 'error');
     return;
   }
 
   const parsed = parseBulkPlaceText(raw);
   if (Object.keys(parsed).length === 0) {
-    alert('ไม่พบหัวข้อที่ระบบรู้จักในข้อความที่วางเลย ลองเช็คว่าพิมพ์ชื่อหัวข้อตามด้วยเครื่องหมาย ":" ถูกต้องไหม (เช่น "จังหวัด: กาญจนบุรี")');
+    toast('ไม่พบหัวข้อที่ระบบรู้จักในข้อความที่วางเลย ลองเช็คว่าพิมพ์ชื่อหัวข้อตามด้วยเครื่องหมาย ":" ถูกต้องไหม (เช่น "จังหวัด: กาญจนบุรี")', 'error');
     return;
   }
   const idField = document.getElementById('pId');
@@ -291,7 +291,7 @@ function applyBulkPlaceParse() {
     document.getElementById('pAccent').value = Math.min(6, Math.max(1, parseInt(parsed.accent, 10)));
   }
 
-  alert('แยกข้อมูลเรียบร้อย ✅ เลื่อนลงไปตรวจทานแต่ละช่องอีกทีก่อนกด "บันทึก" ได้เลย');
+  toast('แยกข้อมูลเรียบร้อย ✅ เลื่อนลงไปตรวจทานแต่ละช่องอีกทีก่อนกด "บันทึก" ได้เลย', 'success');
 }
 
 /* อัปโหลดไฟล์รูปที่ผู้ใช้เลือกไปเก็บเป็นไฟล์จริงบนเซิร์ฟเวอร์ (POST /api/admin/uploads)
@@ -445,13 +445,20 @@ async function submitPlaceForm(event) {
 }
 
 async function deletePlace(id) {
-  if (!confirm('ต้องการลบสถานที่นี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้')) return;
+  const ok = await confirmDialog({
+    title: 'ลบสถานที่',
+    message: 'ต้องการลบสถานที่นี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้',
+    confirmText: 'ลบสถานที่',
+    cancelText: 'ยกเลิก',
+    danger: true
+  });
+  if (!ok) return;
   try {
     await api('/admin/places/' + encodeURIComponent(id), { method: 'DELETE' });
     await loadPlaces();
     renderPlacesPanel();
   } catch (e) {
-    alert(e.message);
+    toast(e.message, 'error');
   }
 }
 
@@ -582,13 +589,20 @@ async function submitArticleForm(event) {
 }
 
 async function deleteArticle(id) {
-  if (!confirm('ต้องการลบบทความนี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้')) return;
+  const ok = await confirmDialog({
+    title: 'ลบบทความ',
+    message: 'ต้องการลบบทความนี้ใช่หรือไม่? การลบไม่สามารถย้อนกลับได้',
+    confirmText: 'ลบบทความ',
+    cancelText: 'ยกเลิก',
+    danger: true
+  });
+  if (!ok) return;
   try {
     await api('/admin/articles/' + id, { method: 'DELETE' });
     adminArticles = await api('/articles');
     renderArticlesPanel();
   } catch (e) {
-    alert(e.message);
+    toast(e.message, 'error');
   }
 }
 
@@ -641,7 +655,14 @@ function renderUsersPanel() {
 
 async function changeUserRole(id, role) {
   const label = role === 'ADMIN' ? 'เลื่อนขั้นผู้ใช้นี้เป็นแอดมิน' : 'ถอดสิทธิ์แอดมินของผู้ใช้นี้';
-  if (!confirm(`ต้องการ${label}ใช่หรือไม่?`)) return;
+  const ok = await confirmDialog({
+    title: role === 'ADMIN' ? 'เลื่อนขั้นผู้ใช้' : 'ถอดสิทธิ์แอดมิน',
+    message: `ต้องการ${label}ใช่หรือไม่?`,
+    confirmText: 'ยืนยัน',
+    cancelText: 'ยกเลิก',
+    danger: role !== 'ADMIN'
+  });
+  if (!ok) return;
 
   const errorBox = document.getElementById('usersError');
   hideBox(errorBox);

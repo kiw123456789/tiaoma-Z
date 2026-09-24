@@ -184,9 +184,19 @@ function pictureHTML(src, alt, { width, height, lazy = true, className = '' } = 
   return `<img src="${escapeAttr(safe)}" ${attrs}>`;
 }
 
-/* อนุญาตให้ redirect เฉพาะหน้าในเว็บนี้ (กันลิงก์หลอกไปเว็บอื่น) */
+/* อนุญาตให้ redirect เฉพาะหน้าที่อยู่ในรายการนี้เท่านั้น (กัน open redirect ไปเว็บอื่น)
+   หน้าไหนไม่อยู่ในรายการ (หรือ query string แปลกๆ) จะถอยกลับไปหน้าแรกเสมอ */
+const ALLOWED_REDIRECT_PAGES = [
+  'index.html', 'places.html', 'place-detail.html',
+  'articles.html', 'article-detail.html', 'map.html',
+  'about.html', 'profile.html', 'liked.html', 'login.html', 'admin.html'
+];
+
 function safeRedirect(target) {
-  return /^[A-Za-z0-9_-]+\.html(\?[^\s]*)?$/.test(target || '') ? target : 'index.html';
+  const raw = String(target || '').trim();
+  if (!/^[A-Za-z0-9_-]+\.html(?:\?[^#\s]*)?$/.test(raw)) return 'index.html';
+  const page = raw.split('?')[0];
+  return ALLOWED_REDIRECT_PAGES.includes(page) ? raw : 'index.html';
 }
 
 function showBox(box, message) {
@@ -346,7 +356,10 @@ async function handleRegister(event) {
   }
 
   showBox(successBox, `สมัครสมาชิกสำเร็จ! ยินดีต้อนรับคุณ ${name} — กำลังพาไปหน้าเข้าสู่ระบบ...`);
-  setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+  // ส่ง redirect ต่อ (เช่น มาจากการกดหัวใจแล้วยังไม่ล็อกอิน) ผ่าน query string
+  // เพื่อให้หลังล็อกอินแล้วผู้ใช้กลับมาเจอหน้าที่ตั้งใจไว้ ไม่หายระหว่างทาง
+  const redirect = safeRedirect(new URLSearchParams(window.location.search).get('redirect'));
+  setTimeout(() => { window.location.href = 'login.html?redirect=' + encodeURIComponent(redirect); }, 1500);
   return false;
 }
 
@@ -860,6 +873,9 @@ async function renderPlaceDetail() {
   setMeta('description', place.short);
   setMeta('og:title', place.name + ' | เที่ยวมะ', 'property');
   setMeta('og:description', place.short, 'property');
+  setMeta('og:url', window.location.href.split('#')[0], 'property');
+  const ogImage = safeImageSrc(place.image) ? new URL(safeImageSrc(place.image), window.location.origin).href : '';
+  if (ogImage) setMeta('og:image', ogImage, 'property');
 
   const session = getSession();
   const isLiked = !!session && likedIds.has(place.id);
@@ -1284,6 +1300,9 @@ async function renderArticleDetail() {
   setMeta('description', a.summary);
   setMeta('og:title', a.title + ' | เที่ยวมะ', 'property');
   setMeta('og:description', a.summary, 'property');
+  setMeta('og:url', window.location.href.split('#')[0], 'property');
+  const ogImage = safeImageSrc(a.image) ? new URL(safeImageSrc(a.image), window.location.origin).href : '';
+  if (ogImage) setMeta('og:image', ogImage, 'property');
 
   const img = safeImageSrc(a.image);
   const hero = img
@@ -1722,10 +1741,16 @@ function renderMapList() {
 function initMapPage() {
   const list = document.getElementById('mapList');
   if (!list) return;
+  // หน่วงการวาดรายการ 150ms — พิมพ์เร็วๆ จะไม่รัว re-render (ข้อมูลโตแล้วช่วยได้มาก)
+  let debounceTimer;
+  const debouncedRender = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(renderMapList, 150);
+  };
   ['mapRegionFilter', 'mapSearchInput'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener(id === 'mapSearchInput' ? 'input' : 'change', renderMapList);
+    el.addEventListener(id === 'mapSearchInput' ? 'input' : 'change', debouncedRender);
   });
   renderMapList();
 }

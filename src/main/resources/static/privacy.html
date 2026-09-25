@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script>
+  /* ตั้งธีมก่อนเบราว์เซอร์วาดหน้า กันจอขาวกระพริบตอนโหลดในโหมดมืด */
+  (function () {
+    try {
+      var saved = localStorage.getItem('tiaoma-theme');
+      var dark = saved ? saved === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (e) { /* localStorage ถูกปิด ใช้โหมดสว่างไป */ }
+  })();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นโยบายความเป็นส่วนตัว | เที่ยวมะ</title>
+<meta name="description" content="นโยบายความเป็นส่วนตัวของเที่ยวมะ — เราเก็บข้อมูลอะไรบ้าง ใช้ทำไม และคุณจัดการข้อมูลของคุณอย่างไร">
+<meta name="theme-color" content="#0e7c66" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171a" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tiaoma.example.com/privacy.html">
+
+<!-- Open Graph / แชร์ไป LINE, Facebook แล้วขึ้นรูปและคำอธิบาย -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="เที่ยวมะ">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="นโยบายความเป็นส่วนตัว | เที่ยวมะ">
+<meta property="og:description" content="นโยบายความเป็นส่วนตัวของเที่ยวมะ — เราเก็บข้อมูลอะไรบ้าง ใช้ทำไม และคุณจัดการข้อมูลของคุณอย่างไร">
+<meta property="og:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+<meta property="og:url" content="https://tiaoma.example.com/privacy.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="นโยบายความเป็นส่วนตัว | เที่ยวมะ">
+<meta name="twitter:description" content="นโยบายความเป็นส่วนตัวของเที่ยวมะ — เราเก็บข้อมูลอะไรบ้าง ใช้ทำไม และคุณจัดการข้อมูลของคุณอย่างไร">
+<meta name="twitter:image" content="https://tiaoma.example.com/image/hero-bg.jpg">
+
+<!-- Favicon / ไอคอนบนมือถือ -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="image/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="image/icon-180.png">
+<link rel="manifest" href="site.webmanifest">
+
+<!-- ฟอนต์ไทย -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+
+<a href="#main" class="skip-link">ข้ามไปยังเนื้อหาหลัก</a>
+
+<header class="site-header">
+  <a href="index.html" class="logo">เที่ยว<span class="dot">มะ</span></a>
+  <nav class="main-nav" aria-label="เมนูหลัก">
+    <a href="index.html">หน้าแรก</a>
+    <a href="places.html">แนะนำที่เที่ยว</a>
+    <a href="map.html">แผนที่</a>
+    <a href="articles.html">บทความ</a>
+    <a href="about.html">เที่ยวกับเรา</a>
+  </nav>
+  <div class="header-right">
+    <div class="header-search">
+      <input type="text" id="headerSearchInput" placeholder="ค้นหาที่เที่ยว..." aria-label="ค้นหาที่เที่ยว">
+      <button type="button" onclick="headerSearchAndGo()" aria-label="ค้นหา">🔍</button>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle"
+            aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง/มืด">
+      <span class="icon-light" aria-hidden="true">🌙</span><span class="icon-dark" aria-hidden="true">☀️</span>
+    </button>
+    <span id="authArea">
+      <a href="login.html"><button class="btn-primary">สมัครสมาชิก/เข้าสู่ระบบ</button></a>
+    </span>
+  </div>
+</header>
+
+<main id="main">
+  <article class="article-detail" style="padding: 24px 16px 48px;">
+    <h1>นโยบายความเป็นส่วนตัว</h1>
+    <p class="article-meta">อัปเดตล่าสุด: 26 กันยายน 2569 · ฉบับที่ 1</p>
+    <div class="article-body">
+
+      <p>เว็บไซต์ <strong>เที่ยวมะ</strong> ("เรา") ให้ความสำคัญกับความเป็นส่วนตัวของคุณ
+      หน้านี้อธิบายตรงไปตรงมาว่าเราเก็บข้อมูลอะไรบ้าง ใช้เพื่ออะไร และคุณมีสิทธิจัดการข้อมูลของคุณอย่างไร
+      ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA)</p>
+
+      <h2>1. ผู้ควบคุมข้อมูลส่วนบุคคล</h2>
+      <p>เที่ยวมะ — ช่องทางติดต่อ: <strong>ติดต่อผู้ดูแลระบบผ่านอีเมลที่แสดงในส่วน "ติดต่อ" ท้ายหน้านี้</strong></p>
+
+      <h2>2. ข้อมูลที่เราเก็บ</h2>
+      <h3>2.1 ข้อมูลบัญชีผู้ใช้ (เมื่อคุณสมัครสมาชิก)</h3>
+      <ul>
+        <li>ชื่อที่แสดง (ที่คุณกรอกตอนสมัคร)</li>
+        <li>อีเมล (ใช้เป็นชื่อเข้าใช้งานและติดต่อคุณ)</li>
+        <li>รหัสผ่าน — เราเก็บเฉพาะค่าแฮชเข้ารหัส (BCrypt) ไม่เก็บรหัสผ่านจริง</li>
+        <li>วันที่สร้างบัญชี</li>
+      </ul>
+      <h3>2.2 ข้อมูลการใช้งาน</h3>
+      <ul>
+        <li>สถานที่ท่องเที่ยวที่คุณกด "ถูกใจ" (บันทึกที่เที่ยวโปรด)</li>
+        <li>รีวิวและคะแนนดาวที่คุณเขียนถึงสถานที่ท่องเที่ยว</li>
+      </ul>
+      <h3>2.3 ข้อมูลทางเทคนิคชั่วคราว</h3>
+      <ul>
+        <li>โทเคนตั้งรหัสผ่านใหม่ — เก็บในรูปแฮชเข้ารหัส (SHA-256) และหมดอายุอัตโนมัติใน 30 นาที</li>
+        <li>คุกกี้เซสชัน (Session cookie) — จำเป็นต่อการล็อกอินและความปลอดภัย</li>
+      </ul>
+
+      <h2>3. ข้อมูลที่เรา "ไม่" เก็บ</h2>
+      <ul>
+        <li>ไม่มีระบบติดตามหรือวิเคราะห์พฤติกรรม (Analytics)</li>
+        <li>ไม่มีคุกกี้โฆษณา และไม่มีโฆษณาจากบุคคลที่สาม</li>
+        <li>ไม่เก็บตำแหน่ง GPS แบบละเอียดของตัวคุณ</li>
+        <li>ไม่เก็บประวัติการเรียกดูหน้าของคุณรายบุคคล</li>
+      </ul>
+
+      <h2>4. การเก็บข้อมูลในเครื่องของคุณ</h2>
+      <p>นอกจากคุกกี้เซสชันแล้ว เบราว์เซอร์ของคุณจะบันทึกค่า
+      <code>tiaoma-theme</code> ใน localStorage เพื่อจดจำโหมดสว่าง/มืดเท่านั้น
+      ค่านี้ไม่ใช่ข้อมูลส่วนตัว และลบได้โดยการล้างข้อมูลเว็บไซต์จากเบราว์เซอร์</p>
+
+      <h2>5. วัตถุประสงค์และฐานทางกฎหมาย</h2>
+      <ul>
+        <li><strong>ให้บริการตามที่คุณร้องขอ</strong> (สมัครสมาชิก เข้าสู่ระบบ บันทึกไลก์ เขียนรีวิว) — ฐาน: สัญญาการให้บริการ</li>
+        <li><strong>ส่งลิงก์ตั้งรหัสผ่านใหม่</strong> เมื่อคุณกด "ลืมรหัสผ่าน" — ฐาน: ความยินยอมจากการที่คุณสั่งให้ส่ง</li>
+        <li><strong>รักษาความปลอดภัยของระบบ</strong> เช่น จำกัดจำนวนครั้งที่เดารหัสผ่าน — ฐาน: ประโยชน์โดยชอบด้วยกฎหมาย</li>
+      </ul>
+
+      <h2>6. การเปิดเผยข้อมูลให้บุคคลที่สาม</h2>
+      <p>เราไม่ขายข้อมูลของคุณ เราส่งข้อมูลให้น้อยที่สุดเท่าจำเป็น ได้แก่
+      ผู้ให้บริการส่งอีเมล (Resend) ซึ่งได้รับเพียงอีเมลปลายทางเพื่อนำส่งลิงก์ตั้งรหัสผ่านที่คุณร้องขอเท่านั้น</p>
+
+      <h2>7. ระยะเวลาการเก็บรักษา</h2>
+      <p>เราเก็บข้อมูลบัญชีและการใช้งานของคุณตราบเท่าที่บัญชียังใช้งานอยู่
+      เมื่อคุณลบบัญชี ระบบจะลบข้อมูลบัญชี ไลก์ และรีวิวของคุณออกจากฐานข้อมูล</p>
+
+      <h2>8. สิทธิของคุณ</h2>
+      <p>คุณมีสิทธิ์ตาม PDPA ได้แก่</p>
+      <ul>
+        <li><strong>เข้าถึง:</strong> ดูข้อมูลของคุณได้จากหน้า "โปรไฟล์" เมื่อล็อกอินแล้ว</li>
+        <li><strong>แก้ไข:</strong> เปลี่ยนชื่อที่แสดงและรหัสผ่านได้จากหน้า "โปรไฟล์"</li>
+        <li><strong>ลบข้อมูล:</strong> ลบบัญชีด้วยตัวเองได้จากหน้า "โปรไฟล์" (ลบถาวร)</li>
+        <li><strong>ถอนความยินยอม / ติดต่อสอบถาม:</strong> ผ่านช่องทางติดต่อท้ายหน้านี้ โดยเราจะดำเนินการภายในเวลาอันสมควร</li>
+      </ul>
+
+      <h2>9. ความปลอดภัยของข้อมูล</h2>
+      <ul>
+        <li>รหัสผ่านถูกเก็บเป็นแฮช BCrypt — แม้แต่เราก็ไม่รู้รหัสผ่านจริงของคุณ</li>
+        <li>โทเคนตั้งรหัสผ่านถูกเก็บเป็นแฮช SHA-256 และใช้ได้ครั้งเดียว หมดอายุ 30 นาที</li>
+        <li>มีระบบจำกัดจำนวนครั้งที่พยายามเข้าสู่ระบบ เพื่อป้องกันการเดารหัสผ่าน</li>
+      </ul>
+
+      <h2>10. การเปลี่ยนแปลงนโยบาย</h2>
+      <p>หากมีการเปลี่ยนแปลงนโยบายนี้อย่างมีนัยสำคัญ เราจะประกาศบนหน้านี้พร้อมวันที่อัปเดต</p>
+
+      <h2>11. ติดต่อ</h2>
+      <p>หากมีคำถามหรือต้องการใช้สิทธิเกี่ยวกับข้อมูลส่วนบุคคล ติดต่อได้ที่:
+      <strong>ติดต่อผู้ดูแลระบบ (ช่องทางติดต่อของเที่ยวมะ)</strong></p>
+
+    </div>
+  </article>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>เที่ยวมะ</h4>
+      <a href="about.html">เกี่ยวกับเรา</a>
+      <a href="articles.html">บทความท่องเที่ยว</a>
+      <a href="privacy.html">นโยบายความเป็นส่วนตัว</a>
+    </div>
+    <div class="footer-col">
+      <h4>เมนู</h4>
+      <a href="index.html">หน้าแรก</a>
+      <a href="places.html">แนะนำที่เที่ยว</a>
+    </div>
+    <div class="footer-col">
+      <h4>บัญชีผู้ใช้</h4>
+      <a href="register.html">สมัครสมาชิก</a>
+      <a href="login.html">เข้าสู่ระบบ</a>
+    </div>
+  </div>
+  <div class="footer-bottom"><a href="privacy.html">นโยบายความเป็นส่วนตัว</a> | © 2026 เที่ยวมะ | เว็บไซต์แนะนำสถานที่ท่องเที่ยว</div>
+</footer>
+
+<button id="back-to-top" onclick="scrollToTop()" aria-label="กลับขึ้นด้านบน">⬆</button>
+
+<script src="script.js?v=4"></script>
+</body>
+</html>

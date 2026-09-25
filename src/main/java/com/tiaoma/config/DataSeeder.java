@@ -55,11 +55,19 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (placeRepository.count() == 0) {
-            try (InputStream in = new ClassPathResource("seed/places.json").getInputStream()) {
-                List<Place> places = objectMapper.readValue(in, new TypeReference<List<Place>>() {});
-                placeRepository.saveAll(places);
-                log.info("[tiaoma] เพิ่มสถานที่ตั้งต้น {} แห่ง", places.size());
+        // เพิ่มเฉพาะสถานที่ที่ยังไม่มี id ในฐาน — กันข้อมูลเดิม/ของแอดมินถูกทับ
+        // และรองรับการเติมสถานที่ใหม่จาก places.json ในภายหลังโดยไม่ต้องล้างฐาน
+        try (InputStream in = new ClassPathResource("seed/places.json").getInputStream()) {
+            List<Place> places = objectMapper.readValue(in, new TypeReference<List<Place>>() {});
+            int added = 0;
+            for (Place place : places) {
+                if (!placeRepository.existsById(place.getId())) {
+                    placeRepository.save(place);
+                    added++;
+                }
+            }
+            if (added > 0) {
+                log.info("[tiaoma] เพิ่มสถานที่ตั้งต้น {} แห่ง (รวมทั้งหมด {} แห่ง)", added, places.size());
             }
         }
 

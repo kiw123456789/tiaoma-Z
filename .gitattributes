@@ -1,0 +1,15 @@
+# กันปัญหา line-ending: Linux (Docker/GitHub Actions) ใช้ LF เสมอ
+# .java/.sql/.properties/yml/yaml/.md ถ้าถูก git แปลงเป็น CRLF เวลาขึ้น Docker/CI จะพัง
+* text=auto
+*.java text eol=lf
+*.sql  text eol=lf
+*.properties text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+*.sh   text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

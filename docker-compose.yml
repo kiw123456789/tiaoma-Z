@@ -1,0 +1,41 @@
+# รันฐานข้อมูล PostgreSQL + ตัวแอปให้พร้อมพัฒนา/ทดสอบในเครื่องเดียว
+# ใช้คำสั่ง:  docker compose up -d db
+# แล้วรันแอปด้วย:  mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tiaoma-db
+    environment:
+      POSTGRES_DB: tiaoma
+      POSTGRES_USER: tiaoma
+      POSTGRES_PASSWORD: tiaoma
+    ports:
+      - "5432:5432"
+    volumes:
+      - tiaoma_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tiaoma -d tiaoma"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: tiaoma-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://db:5432/tiaoma
+      DB_USERNAME: tiaoma
+      DB_PASSWORD: tiaoma
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      - tiaoma_uploads:/app/uploads
+
+volumes:
+  tiaoma_pgdata:
+  tiaoma_uploads:

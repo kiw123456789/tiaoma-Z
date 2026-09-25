@@ -1,0 +1,433 @@
+From 38aa1e4951fa20068b1e8289956b3892db2751d2 Mon Sep 17 00:00:00 2001
+From: kiw123456789 <314179845+kiw123456789@users.noreply.github.com>
+Date: Fri, 25 Sep 2026 10:08:47 +0000
+Subject: [PATCH] =?UTF-8?q?PostgreSQL=20+=20Flyway=20migration=20(?=
+ =?UTF-8?q?=E0=B9=82=E0=B8=9B=E0=B8=A3=E0=B9=84=E0=B8=9F=E0=B8=A5=E0=B9=8C?=
+ =?UTF-8?q?=20postgres)=20+=20Docker/CI?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- เพิ่ม spring 포스gres profile (application-postgres.properties): แยกจาก H2 ใช้ตอนพัฒนา
+- เพิ่ม db/migration/V1__init_schema.sql สร้าง schema ทั้ง 6 entity + 2 element collection
+- Place.image: ถอด @Lob/CLOB (เป็นของ H2) เป็น varchar(2000) — PostgreSQL รันผ่าน
+- เพิ่ม dependency postgresql + flyway-core + flyway-database-postgresql ใน pom.xml
+- application.properties: spring.flyway.enabled=false (ไม่รันกับ H2)
+- docker-compose.yml (db + app), Dockerfile, .github/workflows/test.yml (CI mvn test)
+- README: แก้ ./mvnw -> mvn + เพิ่มส่วนรันด้วย PostgreSQL
+- .gitattributes: บังคับ LF กัน Docker/CI พังตอน build
+
+Co-authored-by: arena-agent <297053741+arena-agent@users.noreply.github.com>
+---
+ .gitattributes                                |  15 +++
+ .github/workflows/test.yml                    |  22 ++++
+ Dockerfile                                    |  16 +++
+ README.md                                     |  34 +++++-
+ docker-compose.yml                            |  41 +++++++
+ pom.xml                                       |  15 +++
+ src/main/java/com/tiaoma/model/Place.java     |   6 +-
+ .../resources/application-postgres.properties |  21 ++++
+ src/main/resources/application.properties     |   3 +
+ .../db/migration/V1__init_schema.sql          | 114 ++++++++++++++++++
+ 10 files changed, 280 insertions(+), 7 deletions(-)
+ create mode 100644 .gitattributes
+ create mode 100644 .github/workflows/test.yml
+ create mode 100644 Dockerfile
+ create mode 100644 docker-compose.yml
+ create mode 100644 src/main/resources/application-postgres.properties
+ create mode 100644 src/main/resources/db/migration/V1__init_schema.sql
+
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..c9d3e96
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,15 @@
++# กันปัญหา line-ending: Linux (Docker/GitHub Actions) ใช้ LF เสมอ
++# .java/.sql/.properties/yml/yaml/.md ถ้าถูก git แปลงเป็น CRLF เวลาขึ้น Docker/CI จะพัง
++* text=auto
++*.java text eol=lf
++*.sql  text eol=lf
++*.properties text eol=lf
++*.yml  text eol=lf
++*.yaml text eol=lf
++*.md   text eol=lf
++*.sh   text eol=lf
++*.png binary
++*.jpg binary
++*.jpeg binary
++*.webp binary
++*.ico binary
+diff --git a/.github/workflows/test.yml b/.github/workflows/test.yml
+new file mode 100644
+index 0000000..e04cba5
+--- /dev/null
++++ b/.github/workflows/test.yml
+@@ -0,0 +1,22 @@
++name: Run tests
++
++on:
++  push:
++    branches: [ main ]
++  pull_request:
++    branches: [ main ]
++
++jobs:
++  test:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Set up JDK 17
++        uses: actions/setup-java@v4
++        with:
++          distribution: temurin
++          java-version: 17
++
++      - name: Run tests
++        run: mvn -B test
+diff --git a/Dockerfile b/Dockerfile
+new file mode 100644
+index 0000000..2ba42a3
+--- /dev/null
++++ b/Dockerfile
+@@ -0,0 +1,16 @@
++# Build แล้วรันใน image เดียว — เหมาะกับขึ้น Railway/Render หรือรัน local ผ่าน docker compose
++FROM maven:3.9-eclipse-temurin-17 AS build
++WORKDIR /app
++# ก๊อปเฉพาะ pom.xml ก่อน เพื่อให้ Docker cache ชั้น dependency ได้
++COPY pom.xml .
++RUN mvn -B dependency:go-offline -q
++COPY src ./src
++RUN mvn -B clean package -DskipTests -q
++
++FROM eclipse-temurin:17-jre
++WORKDIR /app
++COPY --from=build /app/target/tiaoma-backend-1.0.0.jar app.jar
++EXPOSE 8080
++# โฟลเดอร์ uploads เค็บนอกรูป image ไว้ให้เหลือตอนรัน (ไฟล์อัปโหลดไม่หายตอน build ใหม่)
++RUN mkdir -p /app/uploads
++ENTRYPOINT ["java", "-Dfile.encoding=UTF-8", "-jar", "app.jar"]
+diff --git a/README.md b/README.md
+index 2115775..66c282f 100644
+--- a/README.md
++++ b/README.md
+@@ -17,7 +17,7 @@
+ ### รัน
+ 
+ ```bash
+-./mvnw spring-boot:run
++mvn spring-boot:run
+ ```
+ 
+ เปิดเบราว์เซอร์ที่ <http://localhost:8080>
+@@ -25,14 +25,14 @@
+ ### build เป็นไฟล์เดียว
+ 
+ ```bash
+-./mvnw clean package
+-java -jar target/tiaoma-backend-0.0.1-SNAPSHOT.jar
++mvn clean package
++java -jar target/tiaoma-backend-1.0.0.jar
+ ```
+ 
+ ### รันเทสต์
+ 
+ ```bash
+-./mvnw test
++mvn test
+ ```
+ 
+ ---
+@@ -119,6 +119,8 @@ src/main/resources/
+ 
+ ## ฐานข้อมูล
+ 
++### โหมดพัฒนา (default) — H2 แบบไฟล์
++
+ ใช้ **H2 แบบไฟล์** เก็บที่ `./data/tiaoma.mv.db` (อยู่ใน `.gitignore` แล้ว)
+ ข้อมูลไม่หายเมื่อปิดโปรแกรม แต่ **ไม่เหมาะกับ production ที่มีผู้ใช้จริง**
+ 
+@@ -128,7 +130,29 @@ src/main/resources/
+ เข้า H2 console ตอนพัฒนาได้ที่ <http://localhost:8080/h2-console>
+ (JDBC URL: `jdbc:h2:file:./data/tiaoma`, user `sa`, ไม่มีรหัสผ่าน)
+ 
+-**ก่อนขึ้น production ควรย้ายไป PostgreSQL + Flyway** และเลิกใช้ `ddl-auto=update`
++### โหมด production — PostgreSQL + Flyway
++
++ย้ายจาก H2 ไป **PostgreSQL** ได้เลย ทำตามนี้:
++
++```bash
++# 1. เริ่มฐานข้อมูล PostgreSQL ด้วย Docker (ต้องมี Docker Desktop)
++docker compose up -d db
++
++# 2. รันแอปด้วย profile postgres
++mvn spring-boot:run -Dspring-boot.run.profiles=postgres
++```
++
++- profile `postgres` อ่านค่าต่อจาก `application-postgres.properties`
++  (ปรับได้ผ่าน env `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`)
++- **Flyway** จะสร้าง schema ให้อัตโนมัติจากไฟล์ใน `src/main/resources/db/migration/`
++  และ `ddl-auto` เปลี่ยนเป็น `validate` — Hibernate จะไม่แก้ตารางเองอีกต่อไป
++  (การแก้โครงสร้างตารางครั้งต่อไปทำผ่านไฟล์ `V2__...sql` ใหม่เท่านั้น)
++
++รันทั้งระบบ (ฐาน + แอป) ด้วยคำสั่งเดียว:
++
++```bash
++docker compose up --build
++```
+ 
+ ---
+ 
+diff --git a/docker-compose.yml b/docker-compose.yml
+new file mode 100644
+index 0000000..28e4269
+--- /dev/null
++++ b/docker-compose.yml
+@@ -0,0 +1,41 @@
++# รันฐานข้อมูล PostgreSQL + ตัวแอปให้พร้อมพัฒนา/ทดสอบในเครื่องเดียว
++# ใช้คำสั่ง:  docker compose up -d db
++# แล้วรันแอปด้วย:  mvn spring-boot:run -Dspring-boot.run.profiles=postgres
++services:
++  db:
++    image: postgres:16-alpine
++    container_name: tiaoma-db
++    environment:
++      POSTGRES_DB: tiaoma
++      POSTGRES_USER: tiaoma
++      POSTGRES_PASSWORD: tiaoma
++    ports:
++      - "5432:5432"
++    volumes:
++      - tiaoma_pgdata:/var/lib/postgresql/data
++    healthcheck:
++      test: ["CMD-SHELL", "pg_isready -U tiaoma -d tiaoma"]
++      interval: 5s
++      timeout: 3s
++      retries: 10
++
++  app:
++    build: .
++    container_name: tiaoma-app
++    depends_on:
++      db:
++        condition: service_healthy
++    environment:
++      SPRING_PROFILES_ACTIVE: postgres
++      DB_URL: jdbc:postgresql://db:5432/tiaoma
++      DB_USERNAME: tiaoma
++      DB_PASSWORD: tiaoma
++      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:-}
++    ports:
++      - "8080:8080"
++    volumes:
++      - tiaoma_uploads:/app/uploads
++
++volumes:
++  tiaoma_pgdata:
++  tiaoma_uploads:
+diff --git a/pom.xml b/pom.xml
+index 5ab012a..9df21a3 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -52,6 +52,21 @@
+       <artifactId>h2</artifactId>
+       <scope>runtime</scope>
+     </dependency>
++    <!-- PostgreSQL: ใช้แทน H2 เมื่อรันด้วย profile "postgres" (ดู application-postgres.properties) -->
++    <dependency>
++      <groupId>org.postgresql</groupId>
++      <artifactId>postgresql</artifactId>
++      <scope>runtime</scope>
++    </dependency>
++    <!-- Flyway: จัดการ schema ผ่าน migration ไฟล์ใน db/migration แทน ddl-auto=update -->
++    <dependency>
++      <groupId>org.flywaydb</groupId>
++      <artifactId>flyway-core</artifactId>
++    </dependency>
++    <dependency>
++      <groupId>org.flywaydb</groupId>
++      <artifactId>flyway-database-postgresql</artifactId>
++    </dependency>
+     <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-test</artifactId>
+diff --git a/src/main/java/com/tiaoma/model/Place.java b/src/main/java/com/tiaoma/model/Place.java
+index 2975eb9..135b357 100644
+--- a/src/main/java/com/tiaoma/model/Place.java
++++ b/src/main/java/com/tiaoma/model/Place.java
+@@ -59,8 +59,10 @@ public class Place {
+     @Column(name = "map_query")
+     private String mapQuery;
+ 
+-    @Lob
+-    @Column(columnDefinition = "CLOB")
++    // เก็บเฉพาะพาธของรูป (เช่น image/xxx.jpg หรือ /uploads/2026/09/uuid.jpg)
++    // ไม่ใช้ @Lob แล้ว เพราะ CLOB เป็นของ H2 — PostgreSQL ไม่รู้จัก type CLOB
++    // และรูปที่ใช้จริงเป็นพาธสั้นๆ ไม่ใช่ base64 ก้อนใหญ่ จึงใช้ VARCHAR ธรรมดาพอ
++    @Column(length = 2000)
+     private String image;
+ 
+     private int accent;
+diff --git a/src/main/resources/application-postgres.properties b/src/main/resources/application-postgres.properties
+new file mode 100644
+index 0000000..3c91451
+--- /dev/null
++++ b/src/main/resources/application-postgres.properties
+@@ -0,0 +1,21 @@
++# ===========================================================
++# profile "postgres" — รันบน PostgreSQL จริง (ใช้ Docker หรือฐานภายนอก)
++# วิธีใช้:   mvn spring-boot:run -Dspring-boot.run.profiles=postgres
++#          หรือ  java -jar tiaoma-backend-1.0.0.jar --spring.profiles.active=postgres
++# เริ่มฐานได้ทันทีด้วย:  docker compose up -d db
++# (ค่าปรับได้ผ่าน environment variables: DB_URL, DB_USERNAME, DB_PASSWORD)
++# ===========================================================
++
++spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/tiaoma}
++spring.datasource.driver-class-name=org.postgresql.Driver
++spring.datasource.username=${DB_USERNAME:tiaoma}
++spring.datasource.password=${DB_PASSWORD:tiaoma}
++
++# schema ถูกสร้างและอัปเดตโดย Flyway (ไฟล์ใน db/migration) — ห้ามให้ Hibernate แก้ตารางเอง
++spring.jpa.hibernate.ddl-auto=validate
++
++# เปิด Flyway (profile postgres ใช้ Flyway แทน ddl-auto)
++spring.flyway.enabled=true
++
++# ปิด H2 console (profile นี้ไม่ใช้ H2 แล้ว)
++spring.h2.console.enabled=false
+diff --git a/src/main/resources/application.properties b/src/main/resources/application.properties
+index eedaf61..705fcca 100644
+--- a/src/main/resources/application.properties
++++ b/src/main/resources/application.properties
+@@ -18,6 +18,9 @@ spring.jpa.hibernate.ddl-auto=update
+ spring.jpa.show-sql=false
+ spring.jpa.open-in-view=false
+ 
++# Flyway จัดการ schema (ไฟล์ใน db/migration) — profile "postgres" จะเปิดใช้เอง
++spring.flyway.enabled=false
++
+ # H2 console ใช้ตอนพัฒนาเท่านั้น — ปิดอัตโนมัติเมื่อรันด้วย profile prod
+ # (ดู application-prod.properties.example)
+ spring.h2.console.enabled=${H2_CONSOLE_ENABLED:true}
+diff --git a/src/main/resources/db/migration/V1__init_schema.sql b/src/main/resources/db/migration/V1__init_schema.sql
+new file mode 100644
+index 0000000..3d6268d
+--- /dev/null
++++ b/src/main/resources/db/migration/V1__init_schema.sql
+@@ -0,0 +1,114 @@
++-- ==========================================================
++-- เที่ยวมะ (tiaoma) — สร้าง schema ของฐานข้อมูล PostgreSQL
++-- ใช้ Flyway เป็นผู้จัดการ (แทน spring.jpa.hibernate.ddl-auto=update)
++-- ไฟล์นี้ต้องตรงกับ model ใน src/main/java/com/tiaoma/model/** ทุกตัว
++-- ถ้าจะแก้โครงสร้างตาราง อย่าแก้ไฟล์นี้ — ให้เพิ่มไฟล์ V2__..., V3__... ใหม่เท่านั้น
++-- =
++-- ชนิดคอลัมน์เขียนให้ตรงกับสิ่งที่ Hibernate 6 ใช้ (เพื่อให้ ddl-auto=validate ผ่าน)
++--   String ไม่ระบุความยาว -> varchar(255)
++--   LocalDateTime        -> timestamp
++--   LocalDate            -> date
++--   int / Long           -> integer / bigint
++-- ==========================================================
++
++-- ---- ผู้ใช้ ---- -------------------------------------------------
++create table users (
++    id            bigint generated by default as identity primary key,
++    name          varchar(100) not null,
++    email         varchar(254) not null,
++    password_hash varchar(255) not null,
++    created_at    timestamp    not null,
++    role          varchar(20)  not null,
++    constraint uk_users_email unique (email)
++);
++
++-- ---- สถานที่ท่องเที่ยว (id เป็น string เช่น "doi-inthanon") -------
++create table places (
++    id         varchar(100)  primary key,
++    name       varchar(255)  not null,
++    province   varchar(255)  not null,
++    category   varchar(255)  not null,
++    short_text varchar(500)  not null,
++    hours      varchar(500),
++    fee        varchar(500),
++    best_time  varchar(500),
++    map_query  varchar(255),
++    image      varchar(2000),
++    accent     integer       not null default 0
++);
++
++-- เนื้อหาเต็มของสถานที่ (List<String> description) เรียงตาม sort_order
++create table place_descriptions (
++    place_id  varchar(100) not null,
++    sort_order integer       not null,
++    paragraph varchar(4000),
++    constraint pk_place_descriptions primary key (place_id, sort_order),
++    constraint fk_place_descriptions_place foreign key (place_id)
++        references places (id) on delete cascade
++);
++
++-- จุดเด่นของสถานที่ (List<String> highlights) เรียงตาม sort_order
++create table place_highlights (
++    place_id   varchar(100) not null,
++    sort_order integer       not null,
++    highlight  varchar(500),
++    constraint pk_place_highlights primary key (place_id, sort_order),
++    constraint fk_place_highlights_place foreign key (place_id)
++        references places (id) on delete cascade
++);
++
++-- ---- บทความ ------- ----------------------------------------------
++create table articles (
++    id           bigint generated by default as identity primary key,
++    title        varchar(255)  not null,
++    summary      varchar(1000) not null,
++    image        varchar(255),
++    category     varchar(255)  not null,
++    published_at date          not null,
++    content      varchar(20000)
++);
++
++-- ---- รีวิว + ดาว (หนึ่งคน หนึ่งรีวิวต่อหนึ่งสถานที่) ----------------
++create table reviews (
++    id         bigint generated by default as identity primary key,
++    user_id    bigint       not null,
++    place_id   varchar(100) not null,
++    rating     integer      not null,
++    comment    varchar(1000),
++    created_at timestamp    not null,
++    updated_at timestamp,
++    constraint uk_review_user_place unique (user_id, place_id),
++    constraint fk_reviews_user foreign key (user_id)
++        references users (id) on delete cascade,
++    constraint fk_reviews_place foreign key (place_id)
++        references places (id) on delete cascade
++);
++
++-- ---- ที่เที่ยวโปรด (คีย์ผสม user_id + place_id) -------------------
++create table likes (
++    user_id    bigint       not null,
++    place_id   varchar(100) not null,
++    created_at timestamp    not null,
++    constraint pk_likes primary key (user_id, place_id),
++    constraint fk_likes_user foreign key (user_id)
++        references users (id) on delete cascade,
++    constraint fk_likes_place foreign key (place_id)
++        references places (id) on delete cascade
++);
++
++-- ---- โทเคนรีเซ็ตรหัสผ่าน (เก็บเฉพาะ SHA-256 hash) ------------------
++create table password_reset_tokens (
++    id         bigint      generated by default as identity primary key,
++    token_hash varchar(64) not null,
++    user_id    bigint      not null,
++    expires_at timestamp   not null,
++    constraint uk_reset_token_hash unique (token_hash),
++    constraint fk_reset_tokens_user foreign key (user_id)
++        references users (id) on delete cascade
++);
++
++-- ---- ดัชนีสำหรับคิวรี่ที่ใช้บ่อย (ช่วยให้หน้าเว็บเร็วขึ้น) -----------
++create index idx_reviews_place    on reviews (place_id);
++create index idx_reviews_user     on reviews (user_id);
++create index idx_likes_user       on likes (user_id);
++create index idx_articles_publish on articles (published_at desc);
+-- 

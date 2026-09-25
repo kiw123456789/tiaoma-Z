@@ -59,8 +59,7 @@ public class Place {
     @Column(name = "map_query")
     private String mapQuery;
 
-    @Lob
-    @Column(columnDefinition = "CLOB")
+     @Column(length = 2000)
     private String image;
 
     private int accent;

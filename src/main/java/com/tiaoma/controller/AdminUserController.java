@@ -5,6 +5,7 @@ import com.tiaoma.model.User;
 import com.tiaoma.repository.UserRepository;
 import com.tiaoma.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,12 @@ import java.util.Map;
 public class AdminUserController {
 
     private final UserRepository userRepository;
+    private final String founderEmail;
 
-    public AdminUserController(UserRepository userRepository) {
+    public AdminUserController(UserRepository userRepository,
+                               @Value("${app.admin.email}") String founderEmail) {
         this.userRepository = userRepository;
+        this.founderEmail = founderEmail;
     }
 
     @GetMapping
@@ -47,6 +51,20 @@ public class AdminUserController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "ไม่พบผู้ใช้ปัจจุบัน"));
 
         boolean demotingToUser = newRole == User.Role.USER;
+
+        // === สิทธิ์แอดมินคนแรก (อีเมลตาม app.admin.email) ===
+        boolean currentIsFounder = AuthService.normalizeEmail(current.getEmail())
+                .equals(AuthService.normalizeEmail(founderEmail));
+        if (newRole == User.Role.ADMIN && !currentIsFounder) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "เฉพาะแอดมินคนแรกเท่านั้นที่สามารถเลื่อนขั้นผู้ใช้เป็นแอดมินได้");
+        }
+        boolean targetIsFounder = AuthService.normalizeEmail(target.getEmail())
+                .equals(AuthService.normalizeEmail(founderEmail));
+        if (demotingToUser && targetIsFounder) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "ไม่สามารถถอดสิทธิ์แอดมินคนแรกได้");
+        }
 
         if (demotingToUser && target.getId().equals(current.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

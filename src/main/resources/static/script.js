@@ -1576,9 +1576,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   // หน้าแผนที่รวมที่เที่ยว
   initMapPage();
 
-  // หน้าแรก: แสดงสถานที่แนะนำ 6 อันดับแรก
+  // หน้าแรก: แสดงสถานที่แนะนำ 8 อันดับแรก สลับกันทุกภาคให้หลากหลาย
   if (grid && grid.dataset.mode === 'home' && typeof PLACES !== 'undefined') {
-    renderPlacesGrid('places', PLACES.slice(0, 6));
+    const byRegion = {};
+    PLACES.forEach(p => {
+      const r = getRegionByProvince(p.province) || 'อื่นๆ';
+      if (!byRegion[r]) byRegion[r] = [];
+      byRegion[r].push(p);
+    });
+    const regionOrder = [...REGION_ORDER, 'อื่นๆ'].filter(r => byRegion[r] && byRegion[r].length);
+    const featured = [];
+    let idx = 0;
+    while (featured.length < 8) {
+      let added = false;
+      for (const r of regionOrder) {
+        if (byRegion[r][idx]) {
+          featured.push(byRegion[r][idx]);
+          added = true;
+          if (featured.length >= 8) break;
+        }
+      }
+      if (!added) break;
+      idx++;
+    }
+    renderPlacesGrid('places', featured);
   }
   // หน้าแนะนำที่เที่ยวทั้งหมด
   if (grid && grid.dataset.mode === 'all' && typeof PLACES !== 'undefined') {

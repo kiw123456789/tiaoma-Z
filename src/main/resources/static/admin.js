@@ -68,36 +68,173 @@ function switchAdminTab(tab) {
   document.getElementById('panelArticles').classList.toggle('active', tab === 'articles');
   document.getElementById('panelUsers').classList.toggle('active', tab === 'users');
 }
-
 /* ==================== สถานที่ท่องเที่ยว ==================== */
 
 function renderPlacesPanel() {
   const panel = document.getElementById('panelPlaces');
   if (!panel) return;
 
-  const rows = PLACES.map(p => `
-    <tr>
+  // เช็คว่าสถานที่แต่ละแห่ง "ครบ" หรือยัง: เนื้อหาครบทุกช่อง + มีรูป
+  // (ใช้ "แสดงผล" เท่านั้น — ห้ามเอาไปเรียงลำดับ เด็ดขาด)
+  const getPlaceIssues = p => {
+    const issues = [];
+    const notEmpty = v => v !== undefined && v !== null && String(v).trim() !== '';
+    if (!notEmpty(p.image)) issues.push('ไม่มีรูป');
+
+    const missing = [];
+    if (!notEmpty(p.name)) missing.push('ชื่อ');
+    if (!notEmpty(p.province)) missing.push('จังหวัด');
+    if (!notEmpty(p.category)) missing.push('หมวดหมู่');
+    if (!notEmpty(p.short)) missing.push('คำอธิบายสั้น');
+    const descCount = Array.isArray(p.description)
+      ? p.description.filter(s => notEmpty(s)).length
+      : (notEmpty(p.description) ? 1 : 0);
+    if (descCount < 1) missing.push('เนื้อหาเต็ม');
+    const hlCount = Array.isArray(p.highlights)
+      ? p.highlights.filter(s => notEmpty(s)).length
+      : (notEmpty(p.highlights) ? 1 : 0);
+    if (hlCount < 3) missing.push('จุดเด่นน้อยกว่า 3');
+    if (!notEmpty(p.hours)) missing.push('เวลาเปิด-ปิด');
+    if (!notEmpty(p.fee)) missing.push('ค่าเข้าชม');
+    if (!notEmpty(p.bestTime)) missing.push('ช่วงเวลาเที่ยว');
+    if (!notEmpty(p.mapQuery)) missing.push('ค้นหาแผนที่');
+    if (missing.length) issues.push('ข้อมูลไม่ครบ: ' + missing.join(', '));
+    return issues;
+  };
+
+  const rowHTML = p => {
+    const issues = getPlaceIssues(p);
+    const incomplete = issues.length > 0;
+    const rowStyle = incomplete ? ' style="color:#dc3545;"' : '';
+    const status = incomplete
+      ? issues.map(i => `<span style="display:inline-block;margin:1px 3px 1px 0;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;">${escapeHTML(i)}</span>`).join('')
+      : '<span style="color:#16a34a;font-weight:600;">✓ ครบ</span>';
+    return `
+    <tr${rowStyle}>
       <td>${escapeHTML(p.id)}</td>
       <td>${escapeHTML(p.name)}</td>
       <td>${escapeHTML(p.province)}</td>
       <td>${escapeHTML(p.category)}</td>
+      <td>${status}</td>
       <td>
         <button class="admin-edit-btn" onclick="startEditPlace('${p.id}')">แก้ไข</button>
         <button class="admin-delete-btn" onclick="deletePlace('${p.id}')">ลบ</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  };
+
+  const thead = `<thead><tr><th>รหัส (id)</th><th>ชื่อ</th><th>จังหวัด</th><th>หมวดหมู่</th><th>สถานะ</th><th>จัดการ</th></tr></thead>`;
+
+  // จัดกลุ่มตามภาค — "ไม่ sort" อะไรทั้งสิ้น ใช้ลำดับข้อมูลเดิมจาก API เท่านั้น
+  const groups = {};
+  PLACES.forEach(p => {
+    const region = getRegionByProvince(p.province) || 'อื่นๆ';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(p);
+  });
+  const orderedRegions = [...REGION_ORDER, 'อื่นๆ'].filter(r => groups[r] && groups[r].length);
+
+  const sections = PLACES.length === 0
+    ? `<table class="admin-table">${thead}<tbody><tr><td colspan="6">ยังไม่มีข้อมูล</td></tr></tbody></table>`
+    : orderedRegions.map(region => {
+        const items = groups[region];   // ลำดับเดิมเป๊ะ ไม่กระโดดเมื่อใส่รูป
+        const bad = items.filter(x => getPlaceIssues(x).length > 0).length;
+        const badLabel = bad > 0
+          ? ` <span style="color:#dc3545;font-weight:600;">ยังไม่ครบ ${bad}</span>`
+          : '';
+        return `
+      <div class="admin-region-group">
+        <h4 class="admin-region-title" style="margin:20px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span aria-hidden="true">${REGION_ICONS[region] || '📍'}</span>
+          ${escapeHTML(REGION_LABELS[region] || region)}
+          <span style="font-weight:400;opacity:.7;">${items.length} แห่ง</span>${badLabel}
+        </h4>
+        <table class="admin-table">
+          ${thead}
+          <tbody>${items.map(rowHTML).join('')}</tbody>
+        </table>
+      </div>`;
+      }).join('');
 
   panel.innerHTML = `
-    <table class="admin-table">
-      <thead><tr><th>รหัส (id)</th><th>ชื่อ</th><th>จังหวัด</th><th>หมวดหมู่</th><th>จัดการ</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>'}</tbody>
-    </table>
+    <div style="margin:0 0 12px;font-size:12px;opacity:.75;">สีแดง + badge = ยังไม่ครบ · เรียงตามลำดับข้อมูลเดิม ใส่รูปแล้วตำแหน่งไม่กระโดด</div>
+    ${sections}
     <div id="placeFormWrap"></div>
   `;
 
   renderPlaceForm();
 }
+  const rowHTML = p => {
+    const issues = getPlaceIssues(p);
+    const incomplete = issues.length > 0;
+    const rowStyle = incomplete ? ' style="color:#dc3545;"' : '';
+    const status = incomplete
+      ? issues.map(i => `<span style="display:inline-block;margin:1px 3px 1px 0;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;">${escapeHTML(i)}</span>`).join('')
+      : '<span style="color:#16a34a;font-weight:600;">✓ ครบ</span>';
+    return `
+    <tr${rowStyle}>
+      <td>${escapeHTML(p.id)}</td>
+      <td>${escapeHTML(p.name)}</td>
+      <td>${escapeHTML(p.province)}</td>
+      <td>${escapeHTML(p.category)}</td>
+      <td>${status}</td>
+      <td>
+        <button class="admin-edit-btn" onclick="startEditPlace('${p.id}')">แก้ไข</button>
+        <button class="admin-delete-btn" onclick="deletePlace('${p.id}')">ลบ</button>
+      </td>
+    </tr>`;
+  };
+
+  const thead = `<thead><tr><th>รหัส (id)</th><th>ชื่อ</th><th>จังหวัด</th><th>หมวดหมู่</th><th>สถานะ</th><th>จัดการ</th></tr></thead>`;
+
+  // จัดกลุ่มสถานที่ตามภาค ตามลำดับ REGION_ORDER (ตัวเดียวกับหน้า places.html)
+  // ภายในภาค: ดันรายการที่ยังไม่ครบขึ้นบนสุด + นับ "ไม่ครบ" โชว์ที่หัวกลุ่ม
+  const groups = {};
+  PLACES.forEach(p => {
+    const region = getRegionByProvince(p.province) || 'อื่นๆ';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(p);
+  });
+  const orderedRegions = [...REGION_ORDER, 'อื่นๆ'].filter(r => groups[r] && groups[r].length);
+
+  const sections = PLACES.length === 0
+    ? `<table class="admin-table">${thead}<tbody><tr><td colspan="6">ยังไม่มีข้อมูล</td></tr></tbody></table>`
+    : orderedRegions.map(region => {
+         let items = groups[region].slice();
+        if (sortIncompleteFirst) {
+          items.sort((a, b) => getPlaceIssues(b).length - getPlaceIssues(a).length);
+        }
+        const bad = items.filter(x => getPlaceIssues(x).length > 0).length;
+        const badLabel = bad > 0
+          ? ` <span style="color:#dc3545;font-weight:600;">ยังไม่ครบ ${bad}</span>`
+          : '';
+        return `
+      <div class="admin-region-group">
+        <h4 class="admin-region-title" style="margin:20px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span aria-hidden="true">${REGION_ICONS[region] || '📍'}</span>
+          ${escapeHTML(REGION_LABELS[region] || region)}
+          <span style="font-weight:400;opacity:.7;">${items.length} แห่ง</span>${badLabel}
+        </h4>
+        <table class="admin-table">
+          ${thead}
+          <tbody>${items.map(rowHTML).join('')}</tbody>
+        </table>
+      </div>`;
+      }).join('');
+
+    panel.innerHTML = `
+    <div style="margin:0 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button type="button" class="admin-edit-btn" onclick="toggleSortBadFirst()"
+        style="${sortIncompleteFirst ? 'background:#dc3545;border-color:#dc3545;color:#fff;' : ''}">
+        ↑ ไม่ครบขึ้นก่อน${sortIncompleteFirst ? ' (เปิดอยู่)' : ''}
+      </button>
+      <span style="font-size:12px;opacity:.75;">สีแดง = ยังไม่ครบ · เปิดปุ่มนี้ตอนอยากไล่แก้ทีเดียว ปิดอยู่ = เรียงตามเดิม ไม่กระโดด</span>
+    </div>
+    ${sections}
+    <div id="placeFormWrap"></div>
+  `;
+
+  renderPlaceForm();
 
 function renderPlaceForm() {
   const wrap = document.getElementById('placeFormWrap');
@@ -613,7 +750,7 @@ function renderUsersPanel() {
   if (!panel) return;
 
   const myId = getSession().id;
-
+  const canGrant = !!getSession().canGrantAdmin;
   const rows = adminUsers.map(u => {
     const isAdmin = u.role === 'ADMIN';
     const isSelf = u.id === myId;
@@ -625,7 +762,9 @@ function renderUsersPanel() {
     } else if (isAdmin) {
       actionCell = `<button class="admin-delete-btn" onclick="changeUserRole(${u.id}, 'USER')">ถอดสิทธิ์แอดมิน</button>`;
     } else {
-      actionCell = `<button class="admin-edit-btn" onclick="changeUserRole(${u.id}, 'ADMIN')">เลื่อนเป็นแอดมิน</button>`;
+      actionCell = canGrant
+        ? `<button class="admin-edit-btn" onclick="changeUserRole(${u.id}, 'ADMIN')">เลื่อนเป็นแอดมิน</button>`
+        : `<span style="color:#999;font-size:12px;">เฉพาะแอดมินคนแรก</span>`;
     }
 
     const badgeStyle = isAdmin
@@ -642,8 +781,13 @@ function renderUsersPanel() {
       </tr>`;
   }).join('');
 
+  const grantHint = canGrant
+    ? ''
+    : `<div style="font-size:12px;color:#999;margin-bottom:8px;">คุณไม่ใช่แอดมินคนแรก — เลื่อนขั้นเป็นแอดมินเป็นสิทธิ์ของแอดมินคนแรกเท่านั้น (ถอดสิทธิ์แอดมินยังทำได้)</div>`;
+
   panel.innerHTML = `
     <div class="form-error" id="usersError"></div>
+    ${grantHint}
     <table class="admin-table">
       <thead>
         <tr><th>ชื่อ</th><th>อีเมล</th><th>สิทธิ์</th><th>สมัครเมื่อ</th><th>จัดการ</th></tr>

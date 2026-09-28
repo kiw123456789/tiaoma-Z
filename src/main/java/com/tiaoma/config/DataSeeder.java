@@ -19,14 +19,28 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** ใส่ข้อมูลตั้งต้น (สถานที่ + บทความ + บัญชีแอดมินคนแรก) ครั้งแรกที่ฐานข้อมูลยังว่าง */
 @Component
 public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
+
+    /** ไฟล์ seed สถานที่ — แยกตามภาค (places.json คือไฟล์รวมเดิม ที่เหลือเป็นไฟล์รายภาค) */
+    private static final String[] PLACE_FILES = {
+            "seed/places.json",
+            "seed/places-north.json",
+            "seed/places-west.json",
+            "seed/places-isan.json",
+            "seed/places-central.json",
+            "seed/places-east.json",
+            "seed/places-south.json"
+    };
 
     private final PlaceRepository placeRepository;
     private final ArticleRepository articleRepository;
@@ -55,33 +69,60 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // เพิ่มเฉพาะสถานที่ที่ยังไม่มี id ในฐาน — กันข้อมูลเดิม/ของแอดมินถูกทับ
-        // และรองรับการเติมสถานที่ใหม่จาก places.json ในภายหลังโดยไม่ต้องล้างฐาน
-        try (InputStream in = new ClassPathResource("seed/places.json").getInputStream()) {
-            List<Place> places = objectMapper.readValue(in, new TypeReference<List<Place>>() {});
-            int added = 0;
-            for (Place place : places) {
-                if (!placeRepository.existsById(place.getId())) {
-                    placeRepository.save(place);
-                    added++;
-                }
-            }
-            if (added > 0) {
-                log.info("[tiaoma] เพิ่มสถานที่ตั้งต้น {} แห่ง (รวมทั้งหมด {} แห่ง)", added, places.size());
-            }
-        }
+        seedPlaces();
 
         if (articleRepository.count() == 0) {
-            try (InputStream in = new ClassPathResource("seed/articles.json").getInputStream()) {
-                List<Article> articles = objectMapper.readValue(in, new TypeReference<List<Article>>() {});
-                articleRepository.saveAll(articles);
-                log.info("[tiaoma] เพิ่มบทความตั้งต้น {} ชิ้น", articles.size());
+            ClassPathResource articlesResource = new ClassPathResource("seed/articles.json");
+            if (articlesResource.exists()) {
+                try (InputStream in = articlesResource.getInputStream()) {
+                    List<Article> articles = objectMapper.readValue(in, new TypeReference<List<Article>>() {});
+                    articleRepository.saveAll(articles);
+                    log.info("[tiaoma] เพิ่มบทความตั้งต้น {} ชิ้น", articles.size());
+                }
+            } else {
+                log.warn("[tiaoma] ไม่พบ seed/articles.json จึงข้ามการใส่บทความตั้งต้น");
             }
         }
 
         seedFirstAdmin();
     }
 
+    /**
+     * seed สถานที่จากหลายไฟล์ตามลำดับ PLACE_FILES — เติมเฉพาะ id ที่ยังไม่มีในตาราง
+     * (idempotent: รีบูตกี่ครั้งก็ไม่ทับรายการเดิม และข้ามไฟล์ที่ยังไม่มี)
+     */
+    private void seedPlaces() throws Exception {
+        Set<String> existingIds = new HashSet<>();
+        placeRepository.findAll().forEach(p -> existingIds.add(p.getId()));
+
+        List<Place> newPlaces = new ArrayList<>();
+        for (String file : PLACE_FILES) {
+            ClassPathResource resource = new ClassPathResource(file);
+            if (!resource.exists()) {
+                continue;
+            }
+            try (InputStream in = resource.getInputStream()) {
+                List<Place> places = objectMapper.readValue(in, new TypeReference<List<Place>>() {});
+                for (Place place : places) {
+                    if (existingIds.add(place.getId())) {
+                        newPlaces.add(place);
+                    }
+                }
+            } catch (Exception e) {
+                throw new Exception("อ่านไฟล์ seed ไม่สำเร็จ: " + file, e);
+            }
+        }
+
+        if (!newPlaces.isEmpty()) {
+            placeRepository.saveAll(newPlaces);
+        }
+        long total = placeRepository.count();
+        if (newPlaces.isEmpty()) {
+            log.info("[tiaoma] สถานที่ตั้งต้นครบแล้ว {} แห่ง (ไม่มีรายการใหม่)", total);
+        } else {
+            log.info("[tiaoma] เพิ่มสถานที่ตั้งต้น {} แห่ง (รวมทั้งหมด {} แห่ง)", newPlaces.size(), total);
+        }
+    }
     /**
      * ถ้ายังไม่มีแอดมินในระบบเลย ให้สร้าง/เลื่อนขั้นบัญชีตาม app.admin.email ที่ตั้งค่าไว้
      * (ถ้าอีเมลนี้สมัครสมาชิกไว้แล้ว จะแค่เลื่อนขั้นให้ ไม่สร้างซ้ำหรือทับรหัสผ่านเดิม)
